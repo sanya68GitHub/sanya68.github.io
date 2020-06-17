@@ -1,0 +1,1136 @@
+/*
+Contains functions and constants that control the appearence of the SCP
+once integrated in the target LMS
+*/
+var ENABLED_TOP_MENU_ITEM_CLASSES = "enabledTopMenuItem btn btn-default btn-xs navbar-btn";
+var DISABLED_TOP_MENU_ITEM_CLASSES = "disabledTopMenuItem btn btn-default btn-xs navbar-btn";
+var SUCCESS_UNKNOWN_IMAGE_URL = "images/successUnknown.gif";
+var SUCCESS_PASSED_IMAGE_URL = "images/passed.gif";
+var SUCCESS_FAILED_IMAGE_URL = "images/failed.gif";
+var COMPLETION_UNKNOWN_IMAGE_URL = "images/completionUnknown.gif";
+var COMPLETION_COMPLETED_IMAGE_URL = "images/completed.gif";
+var COMPLETION_INCOMPLETE_IMAGE_URL = "images/incomplete.gif";
+
+function GetControlWindow() {
+    var controlWindow = window;
+    var control = controlWindow.Control;
+    var depth = 0;
+    var maxDepth = 10;
+
+    if (!this.controlWindow) {
+        while (!(control || depth > maxDepth)) {
+            controlWindow = controlWindow.parent;
+            control = controlWindow.Control;
+            depth++;
+        }
+        this.controlWindow = controlWindow;
+    }
+    return this.controlWindow;
+}
+
+
+function Integration() {
+    this.CONTENT_FRAME_NAME = "ScormContent";
+
+    //constants local to this specific integration
+    this.MENU_INDENT = 20;
+}
+
+Integration.prototype.PopulateMenuItemDivTag = Integration_PopulateMenuItemDivTag;
+Integration.prototype.UpdateIndentLevel = Integration_UpdateIndentLevel;
+Integration.prototype.GetDocumentObjectForMenu = Integration_GetDocumentObjectForMenu;
+Integration.prototype.GetHtmlElementToInsertMenuWithin = Integration_GetHtmlElementToInsertMenuWithin;
+Integration.prototype.UpdateMenuStateDisplay = Integration_UpdateMenuStateDisplay;
+
+Integration.prototype.SetMenuToggleVisibility = Integration_SetMenuToggleVisibility;
+Integration.prototype.ShowMenu = Integration_ShowMenu;
+Integration.prototype.HideMenu = Integration_HideMenu;
+Integration.prototype.ShowExitDialog = Integration_ShowExitDialog;
+Integration.prototype.HideExitDialog = Integration_HideExitDialog;
+
+Integration.prototype.UpdateControlState = Integration_UpdateControlState;
+Integration.prototype.UpdateProgressBar = Integration_UpdateProgressBar;
+
+Integration.prototype.GetString = Integration_GetString;
+Integration.prototype.PreOverallSequencingProcess = Integration_PreOverallSequencingProcess;
+
+//function for this integration to override the look and feel of the left menu
+//comment out when not overriding
+Integration.prototype.OverrideMenuLookAndFeel = Integration_OverrideMenuLookAndFeel;
+
+//private to this specific integration
+Integration.prototype.GetDocumentObjectForControls = Integration_GetDocumentObjectForControls;
+
+
+//Return an object of this type from each of the functions that interacts with the menu items.
+//This will store the current state of the display.
+//The next time the menu item is updated, this display will be passed back.
+//You should compare the current state with the desired state before making any changes to the DOM.
+//This will result in much more efficient code since manipulating the DOM is an expensive operation.
+//The properties that you include here are up to you and your display. The SCP simply stores and forwards this object.
+
+function DisplayState() {
+    this.SuccessImageDisplayed = null;
+    this.CompletionImageDisplayed = null;
+    this.ActiveDisplayed = null;
+    this.EnabledDisplayed = null;
+    this.StatusTitleDisplayed = null;
+    this.MenuTitleDisplayed = null;
+}
+
+function Integration_GetString(key) {
+    var value = AppStrings[key];
+    var str;
+    if (value !== undefined && value !== null && value.length > 0) {
+        str = value;
+    } else {
+        // If the key doesn't have a value defined for it, use the key itself as the value.  We don't
+        // want to create an error situation here so the worse case is an english string is shown instead
+        // of a localized string.
+        str = key;
+        //alert("Resource String does not exist: " + key);
+    }
+
+    // using built-in arguments but should probably do somethign better in the future
+    var args = Array.prototype.slice.call(arguments);
+    // Substitute variables if this is a formatted string with {0}, {1}, etc
+    for (var i = 1; i < args.length; i++) {
+        var regExToReplace = new RegExp("\\{" + (i - 1) + "\\}", "g");
+        if (args[i] === null) {
+            args[i] = "";
+        }
+
+        str = str.replace(regExToReplace, args[i].toString());
+    }
+
+    return str;
+}
+
+//activityIdentifier is a combination of item id and database id that can be used for identifiying HTML elements 
+//(just activity id alone is not enough because html elements names aren't case sensitive)
+//activityItemId is the item identifier that needs to be passed to the choice request
+function Integration_PopulateMenuItemDivTag(divTag,
+											documentObject,
+											activityIdentifier,
+											activityTitle,
+											indentLevel,
+											deliverable,
+											learningStandard,
+											statusDisplay,
+											activityItemId,
+											activity,
+											menuItem) {
+    // jmh - 12/16/2011 - added activity and menuItem to the parameter list to aid an existing customer's implementation
+    // however they are not used by the default version of this method.
+
+    // AMP 7-31-08 Don't change the structure of this Menu. The Scorm 2004 LMS Conformance AutoTest assumes
+    // that the structure of the tags (span/table/tbody/tr/etc.) will not change here.
+
+    var totalIndent = indentLevel * this.MENU_INDENT;
+
+    var completionImage = documentObject.createElement("div");
+    completionImage.id = "CompletionStatusImg" + activityIdentifier;
+    //completionImage.src = COMPLETION_UNKNOWN_IMAGE_URL;
+    completionImage.className = "sidebar-completion-unknown";
+
+    //IntegrationImplementation.GetString("Completed");
+    var successImage = documentObject.createElement("div");
+    successImage.id = "SuccessStatusImg" + activityIdentifier;
+    //successImage.src = SUCCESS_UNKNOWN_IMAGE_URL;
+    successImage.className = "sidebar-success-unknown";
+
+    var link = documentObject.createElement("div");
+    link.id = "MenuItemText" + activityIdentifier; // AMP 7-31-08 "MenuItemText" must come before the activityID in the id attribute of these span tags due to a dependency in the Scorm 2004 LMS Conformance AutoTest
+    link.className = "menulink";
+    link.innerHTML = activityTitle;
+
+    var tbl = documentObject.createElement("table");
+    tbl.id = "Table" + activityIdentifier;
+
+    var tbody = documentObject.createElement("tbody");
+    tbody.id = "TBody" + activityIdentifier;
+
+    var row = documentObject.createElement("tr");
+    row.id = "Tr" + activityIdentifier;
+
+    var tdCompletion = documentObject.createElement("td");
+    tdCompletion.id = "TdCompletion" + activityIdentifier;
+    tdCompletion.className = "sidebar-completion-col";
+
+    var tdSuccess = documentObject.createElement("td");
+    tdSuccess.id = "TdSucess" + activityIdentifier;
+    tdSuccess.className = "sidebar-success-col";
+
+    var tdIndent = documentObject.createElement("td");
+    tdIndent.id = "TdIndent" + activityIdentifier;
+    tdIndent.style.width = totalIndent + "px";
+
+    var tdLink = documentObject.createElement("td");
+    tdLink.id = "TdLink" + activityIdentifier;
+
+    tdCompletion.appendChild(completionImage);
+    tdSuccess.appendChild(successImage);
+    tdLink.appendChild(link);
+
+
+    if (statusDisplay == STATUS_DISPLAY_COMPELTION_ONLY || statusDisplay == STATUS_DISPLAY_SEPERATE || statusDisplay == STATUS_DISPLAY_COMBINED) {
+        row.appendChild(tdCompletion);
+    }
+
+    if (statusDisplay == STATUS_DISPLAY_SUCCESS_ONLY || statusDisplay == STATUS_DISPLAY_SEPERATE) {
+        row.appendChild(tdSuccess);
+    }
+
+    row.appendChild(tdIndent);
+    row.appendChild(tdLink);
+
+    tbody.appendChild(row);
+    tbl.appendChild(tbody);
+
+    divTag.appendChild(tbl);
+
+    // cursor: pointer works for IE 6 and Mozilla browsers.  cursor: hand only works for older IE
+    var browserName = navigator.appName;
+    var browserVer = parseInt(navigator.appVersion,10);
+    if (browserName == "Microsoft Internet Explorer" && browserVer < 6) {
+        divTag.onmouseover = function () { this.style.cursor = 'hand'; window.status = activityTitle; return true; };
+    } else {
+        divTag.onmouseover = function () { this.style.cursor = 'pointer'; window.status = activityTitle; return true; };
+    }
+    divTag.onmouseout = function () { this.style.cursor = 'default'; window.status = ''; return true; };
+    divTag.onclick = function () {
+        GetControlWindow().Control.ChoiceRequest(activityItemId);
+        return true;
+    };
+
+    var currentDisplayState = new DisplayState();
+
+    currentDisplayState.SuccessImageDisplayed = SUCCESS_UNKNOWN_IMAGE_URL;
+    currentDisplayState.SuccessImageClass = "sidebar-success-unknown";
+    currentDisplayState.CompletionImageDisplayed = COMPLETION_UNKNOWN_IMAGE_URL;
+    currentDisplayState.CompletionImageClass = "sidebar-completion-unknown";
+    currentDisplayState.ActiveDisplayed = null;
+    currentDisplayState.EnabledDisplayed = null;
+    currentDisplayState.StatusTitleDisplayed = "";
+    currentDisplayState.MenuTitleDisplayed = "";
+
+    return currentDisplayState;
+}
+
+function Integration_UpdateIndentLevel(divTag, activityIdentifier, indentLevel) {
+
+    var totalIndent = indentLevel * this.MENU_INDENT;
+
+    //this may get called on a child element which might not have been added to the actual document yet, so use the divTag.document instead of just document
+    var tdIndent = null;
+    var tdIdentifier = "TdIndent" + activityIdentifier;
+
+    if (divTag.document) {
+        //works well in IE
+        tdIndent = divTag.document.getElementById(tdIdentifier);
+    }
+    else {
+        //needed for FireFox
+        var tdNodes = divTag.getElementsByTagName("td");
+
+        for (var i = 0; i < tdNodes.length; i++) {
+            if (tdNodes[i].id == tdIdentifier) {
+                tdIndent = tdNodes[i];
+                break;
+            }
+        }
+    }
+
+    //this can get called before the DOM element is actually added to the document
+    if (tdIndent !== null) {
+
+        //With the new rules in 3rd Edition about forcing some requests to be hidden, we can now be hiding the root
+        if (totalIndent < 0) { totalIndent = 0; }
+
+        tdIndent.style.width = totalIndent + "px";
+    }
+    else {
+        Debug.AssertError("td indent not found");
+    }
+}
+
+//gets called from the window containing the controller
+function Integration_GetDocumentObjectForMenu() {
+    return window.document;
+}
+
+//private to this specific integration
+function Integration_GetDocumentObjectForControls() {
+    return window.document;
+}
+
+//gets called from the window containing the controller
+function Integration_GetHtmlElementToInsertMenuWithin() {
+    return $("#MenuPlaceHolderDiv")[0];
+}
+
+
+//function called when a menu item's status has changed and needs to be graphically updated
+function Integration_UpdateMenuStateDisplay(divTag,
+											documentObject,
+											activity,
+											activityIdentifier,
+											deliverable,
+											currentActivity,
+											navigationRequestInfo,
+											learningStandard,
+											statusDisplay,
+											currentDisplayState,
+											useLookAheadActivityStatus) {
+
+    var newDisplayState = new DisplayState();
+
+    newDisplayState.SuccessImageDisplayed = "";
+    newDisplayState.CompletionImageDisplayed = "";
+    newDisplayState.ActiveDisplayed = null;
+    newDisplayState.EnabledDisplayed = null;
+    newDisplayState.TitleDisplayed = "";
+
+    var activityIsCompleted;
+    if (activity.WasAutoCompleted === true && activity.LookAheadActivity === true && useLookAheadActivityStatus === true) {
+        activityIsCompleted = RESULT_UNKNOWN;
+    } else {
+        activityIsCompleted = activity.IsCompleted();
+    }
+
+    var activityIsSatisfied;
+    if (activity.WasAutoSatisfied === true && activity.LookAheadActivity === true && useLookAheadActivityStatus === true) {
+        activityIsSatisfied = RESULT_UNKNOWN;
+    } else {
+        activityIsSatisfied = activity.IsSatisfied();
+    }
+
+    var activityIsActive = (currentActivity !== null && currentActivity !== undefined && activity.GetItemIdentifier() === currentActivity.GetItemIdentifier());
+
+    var statusTitle = "";
+    var completionTitle = "";
+    var successTitle = "";
+    var menuTextTitle = "";
+
+    if (statusDisplay == STATUS_DISPLAY_SEPERATE) {
+        //dual status display
+        if (activityIsCompleted === true) {
+            newDisplayState.CompletionImageDisplayed = COMPLETION_COMPLETED_IMAGE_URL;
+            newDisplayState.CompletionImageClass = "sidebar-completion-completed";
+            completionTitle = IntegrationImplementation.GetString("Completed");
+        }
+        else if (activityIsCompleted === false) {
+            newDisplayState.CompletionImageDisplayed = COMPLETION_INCOMPLETE_IMAGE_URL;
+            newDisplayState.CompletionImageClass = "sidebar-completion-incomplete";
+            completionTitle = IntegrationImplementation.GetString("Requirement Not Fulfilled");
+        }
+        else {
+            newDisplayState.CompletionImageDisplayed = COMPLETION_UNKNOWN_IMAGE_URL;
+            newDisplayState.CompletionImageClass = "sidebar-completion-unknown";
+            completionTitle = IntegrationImplementation.GetString("Not Started");
+        }
+
+        statusTitle = completionTitle + " / ";
+
+        if (activityIsSatisfied === true) {
+            newDisplayState.SuccessImageDisplayed = SUCCESS_PASSED_IMAGE_URL;
+            newDisplayState.SuccessImageClass = "sidebar-success-passed";
+            successTitle += IntegrationImplementation.GetString("Passed");
+        }
+        else if (activityIsSatisfied === false) {
+            newDisplayState.SuccessImageDisplayed = SUCCESS_FAILED_IMAGE_URL;
+            newDisplayState.SuccessImageClass = "sidebar-success-failed";
+            successTitle += IntegrationImplementation.GetString("Requirement Not Fulfilled");
+        }
+        else {
+            newDisplayState.SuccessImageDisplayed = SUCCESS_UNKNOWN_IMAGE_URL;
+            newDisplayState.SuccessImageClass = "sidebar-success-unknown";
+            successTitle += IntegrationImplementation.GetString("Unknown");
+        }
+
+        statusTitle += successTitle;
+    }
+    else if (statusDisplay == STATUS_DISPLAY_COMPELTION_ONLY || statusDisplay == STATUS_DISPLAY_COMBINED) {
+        //single status display
+        if (activityIsCompleted === true) {
+            newDisplayState.CompletionImageDisplayed = COMPLETION_COMPLETED_IMAGE_URL;
+            newDisplayState.CompletionImageClass = "sidebar-completion-completed";
+            statusTitle = IntegrationImplementation.GetString("Completed");
+        }
+        else if (activityIsCompleted === false) {
+            newDisplayState.CompletionImageDisplayed = COMPLETION_INCOMPLETE_IMAGE_URL;
+            newDisplayState.CompletionImageClass = "sidebar-completion-incomplete";
+            statusTitle = IntegrationImplementation.GetString("Requirement Not Fulfilled");
+        }
+        else {
+            newDisplayState.CompletionImageDisplayed = COMPLETION_UNKNOWN_IMAGE_URL;
+            newDisplayState.CompletionImageClass = "sidebar-completion-unknown";
+            statusTitle = IntegrationImplementation.GetString("Not Started");
+        }
+        if (statusDisplay == STATUS_DISPLAY_COMBINED) {
+            //success status overrides complete status
+            if (activityIsSatisfied === true) {
+                newDisplayState.CompletionImageDisplayed = SUCCESS_PASSED_IMAGE_URL;
+                statusTitle = IntegrationImplementation.GetString("Passed");
+            }
+            else if (activityIsSatisfied === false) {
+                newDisplayState.CompletionImageDisplayed = SUCCESS_FAILED_IMAGE_URL;
+                statusTitle = IntegrationImplementation.GetString("Requirement Not Fulfilled");
+            }
+        }
+    }
+    else if (statusDisplay == STATUS_DISPLAY_SUCCESS_ONLY) {
+
+        if (activityIsSatisfied === true) {
+            newDisplayState.SuccessImageDisplayed = SUCCESS_PASSED_IMAGE_URL;
+            statusTitle += IntegrationImplementation.GetString("Passed");
+        }
+        else if (activityIsSatisfied === false) {
+            newDisplayState.SuccessImageDisplayed = SUCCESS_FAILED_IMAGE_URL;
+            statusTitle += IntegrationImplementation.GetString("Requirement Not Fulfilled");
+        }
+        else {
+            newDisplayState.SuccessImageDisplayed = SUCCESS_UNKNOWN_IMAGE_URL;
+            statusTitle += IntegrationImplementation.GetString("Unknown");
+        }
+
+    }
+
+    if (navigationRequestInfo.WillSucceed === true) {
+        newDisplayState.EnabledDisplayed = true;
+    }
+    else {
+        newDisplayState.EnabledDisplayed = false;
+    }
+
+    if (activityIsActive) {
+        newDisplayState.ActiveDisplayed = true;
+    }
+    else {
+        newDisplayState.ActiveDisplayed = false;
+    }
+
+
+    if (learningStandard.is2004()) {
+
+        if (activity.GetPrimaryObjective().GetMeasureStatus(null, false)) {
+            statusTitle += " / ";
+            statusTitle += IntegrationImplementation.GetString("Score: {0}", activity.GetPrimaryObjective().GetNormalizedMeasure(null, false));
+            successTitle += " / ";
+            successTitle += IntegrationImplementation.GetString("Score: {0}", activity.GetPrimaryObjective().GetNormalizedMeasure(null, false));
+        }
+    }
+    else {
+        if (activity.RunTime !== null) {
+            if (activity.RunTime.ScoreRaw !== null) {
+                statusTitle += " / ";
+                successTitle += " / ";
+
+                if (activity.RunTime.ScoreMax !== null) {
+                    statusTitle += IntegrationImplementation.GetString("Score: {0} of {1}", activity.RunTime.ScoreRaw, activity.RunTime.ScoreMax);
+                    successTitle += IntegrationImplementation.GetString("Score: {0} of {1}", activity.RunTime.ScoreRaw, activity.RunTime.ScoreMax);
+                } else {
+                    statusTitle += IntegrationImplementation.GetString("Score: {0}", activity.RunTime.ScoreRaw);
+                    successTitle += IntegrationImplementation.GetString("Score: {0}", activity.RunTime.ScoreRaw);
+                }
+            }
+        }
+    }
+
+
+    newDisplayState.StatusTitleDisplayed = statusTitle;
+    newDisplayState.MenuTitleDisplayed = statusTitle;
+
+    var completionImage = null;
+    var successImage = null;
+
+    if (statusDisplay == STATUS_DISPLAY_SEPERATE || statusDisplay == STATUS_DISPLAY_COMBINED || statusDisplay == STATUS_DISPLAY_COMPELTION_ONLY) {
+        if (newDisplayState.CompletionImageDisplayed != currentDisplayState.CompletionImageDisplayed) {
+            completionImage = documentObject.getElementById("CompletionStatusImg" + activityIdentifier);
+            completionImage.src = newDisplayState.CompletionImageDisplayed;
+            completionImage.className = newDisplayState.CompletionImageClass;
+        }
+    }
+
+    if (statusDisplay == STATUS_DISPLAY_SEPERATE || statusDisplay == STATUS_DISPLAY_SUCCESS_ONLY) {
+        if (newDisplayState.SuccessImageDisplayed != currentDisplayState.SuccessImageDisplayed) {
+            successImage = documentObject.getElementById("SuccessStatusImg" + activityIdentifier);
+            successImage.className = newDisplayState.SuccessImageClass;
+            successImage.src = newDisplayState.SuccessImageDisplayed;
+        }
+    }
+
+    if ((newDisplayState.EnabledDisplayed != currentDisplayState.EnabledDisplayed) ||
+		(newDisplayState.ActiveDisplayed != currentDisplayState.ActiveDisplayed) ||
+		(newDisplayState.MenuTitleDisplayed != currentDisplayState.MenuTitleDisplayed)) {
+
+        var menuText = documentObject.getElementById("MenuItemText" + activityIdentifier);
+
+        if (newDisplayState.ActiveDisplayed === true) {
+            if (
+				(newDisplayState.ActiveDisplayed != currentDisplayState.ActiveDisplayed) ||
+				(newDisplayState.EnabledDisplayed != currentDisplayState.EnabledDisplayed)
+				) {
+
+                if (newDisplayState.EnabledDisplayed === true) {
+                    menuText.className = "activeMenulink"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest depends on this string.
+                }
+                else {
+                    menuText.className = "activeMenulinkDisabled"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest depends on this string.
+                }
+            }
+        }
+        else {
+            if (
+				(newDisplayState.EnabledDisplayed != currentDisplayState.EnabledDisplayed) ||
+				(newDisplayState.ActiveDisplayed === false && (newDisplayState.ActiveDisplayed != currentDisplayState.ActiveDisplayed))
+			    ) {
+
+                if (newDisplayState.EnabledDisplayed === true) {
+                    menuText.className = "enabledMenulink"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest depends on this string.
+                    menuTextTitle = "";
+                }
+                else {
+                    menuText.className = "disabledMenulink"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest depends on this string.
+                    menuTextTitle = navigationRequestInfo.Exception + " " + navigationRequestInfo.ExceptionText;
+                }
+            }
+        }
+
+        if (newDisplayState.MenuTitleDisplayed != currentDisplayState.MenuTitleDisplayed) {
+            menuText.title = newDisplayState.MenuTitleDisplayed;
+        }
+    }
+
+    if (newDisplayState.StatusTitleDisplayed != currentDisplayState.StatusTitleDisplayed) {
+
+        if (statusDisplay == STATUS_DISPLAY_SEPERATE) {
+            if (completionImage === null) {
+                completionImage = documentObject.getElementById("CompletionStatusImg" + activityIdentifier);
+            }
+            if (successImage === null) {
+                successImage = documentObject.getElementById("SuccessStatusImg" + activityIdentifier);
+            }
+            completionImage.title = completionTitle;
+            successImage.title = successTitle;
+        }
+
+        if (statusDisplay == STATUS_DISPLAY_COMBINED || statusDisplay == STATUS_DISPLAY_COMPELTION_ONLY) {
+            if (completionImage === null) {
+                completionImage = documentObject.getElementById("CompletionStatusImg" + activityIdentifier);
+            }
+            completionImage.title = statusTitle;
+        }
+
+        if (statusDisplay == STATUS_DISPLAY_SUCCESS_ONLY) {
+            if (successImage === null) {
+                successImage = documentObject.getElementById("SuccessStatusImg" + activityIdentifier);
+            }
+            successImage.title = statusTitle;
+        }
+    }
+
+
+
+
+    return newDisplayState;
+}
+
+//determines whether the "show/hide menu" button should be displayed (according to whether or not the course structure is shown)
+//called from the window containing the controller
+function Integration_SetMenuToggleVisibility(isVisible) {
+
+    var doc = this.GetDocumentObjectForControls();
+    var control = doc.getElementById("toggleMenu");
+
+    if (control !== null) {
+        if (isVisible === true) {
+            control.style.visibility = "visible";
+        }
+        else {
+            control.style.visibility = "hidden";
+        }
+    }
+}
+
+//gets called from both the controller frame and from the frame containing the show/hide button
+function Integration_ShowMenu(width) {
+    $("#sidebar").show();
+    $("#HeaderDiv").removeClass('col-lg-12');
+    $("#HeaderDiv").addClass('col-lg-9');
+    $("#ContentDiv").removeClass('col-lg-12');
+    $("#ContentDiv").addClass('col-lg-9');
+}
+
+//gets called from both the controller frame and from the frame containing the show/hide button
+//needs to be able to handle being called when the frameset is already hidden (happens onload)
+function Integration_HideMenu() {
+    $("#sidebar").hide();
+    $("#HeaderDiv").removeClass('col-lg-9');
+    $("#HeaderDiv").addClass('col-lg-12');
+    $("#ContentDiv").removeClass('col-lg-9');
+    $("#ContentDiv").addClass('col-lg-12');
+}
+
+//private.  Note that this is based of keeping the default name of the exit frame as "exitFrame"
+function getPositionOfExitFrame() {
+    var positionOfExitFrame = 0;
+    var positionOfExitFrameFound = false;
+
+    $(getScormFrameset()).children("frame,frameset,iframe").each(function () {
+        if (this.id == "exitFrame") {
+            positionOfExitFrameFound = true;
+            return false; // stop iteration
+        } else {
+            positionOfExitFrame++;
+        }
+    });
+
+    if (positionOfExitFrameFound) {
+        return positionOfExitFrame;
+    } else {
+        alert("Exit Options not shown because no frame named 'exitFrame' is defined in your SCORM Player deliver page");
+        return -1;
+    }
+}
+
+//private
+function getScormFrameset() {
+    var frameset = document.getElementById("ScormPageFrameset");
+    if (frameset === null) {
+        frameset = GetControlWindow().document.getElementById("ScormPageFrameset");
+    }
+    return frameset;
+}
+
+function Integration_ShowExitDialog() {
+    var rows = getScormFrameset().rows.split(',');
+    rows[getPositionOfExitFrame()] = "75";
+    getScormFrameset().rows = rows.join();
+}
+
+function Integration_HideExitDialog() {
+    var rows = getScormFrameset().rows.split(',');
+    rows[getPositionOfExitFrame()] = "0";
+    getScormFrameset().rows = rows.join();
+}
+
+//gets called from the window containing the controller
+
+function Integration_UpdateControlState(doc, aryPossibleRequests, currentActivity) {
+
+    //TODO: don't access the DOM unless there is a change
+
+    var previousElement = doc.getElementById("previous");
+    var previousElement1 = $('#previous');
+    var nextElement = doc.getElementById("next");
+    var nextElement1 = $('#next');
+    //var quitScoElement = doc.getElementById("quitSco");
+    //var quitCourseElement = doc.getElementById("quitCourse");
+    //var pauseElement = doc.getElementById("pause");
+    var exitScoElement = doc.getElementById("closeSco");
+    var exitCourseElement = doc.getElementById("returnToLms");
+
+    var hidePrevious = false;
+    var hideContinue = false;
+    var hideExit = false;
+    var hideAbandon = false;
+    var hideSuspendAll = false;
+    var hideAbandonAll = false;
+    var hideExitAll = false;
+
+    var exceptionText;
+
+    var invalidMenuItemAction = Control.Package.Properties.InvalidMenuItemAction;
+
+    if (currentActivity !== null) {
+        hidePrevious = currentActivity.LearningObject.SequencingData.HidePrevious;
+        hideContinue = currentActivity.LearningObject.SequencingData.HideContinue;
+        hideExit = currentActivity.LearningObject.SequencingData.HideExit;
+        hideAbandon = currentActivity.LearningObject.SequencingData.HideAbandon;
+        hideSuspendAll = currentActivity.LearningObject.SequencingData.HideSuspendAll;
+        hideAbandonAll = currentActivity.LearningObject.SequencingData.HideAbandonAll;
+        hideExitAll = currentActivity.LearningObject.SequencingData.HideExitAll;
+    }
+
+    if (nextElement !== null) {
+        nextElement.title = IntegrationImplementation.GetString("Next").toUpperCase();
+        if (
+			(aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_CONTINUE].WillSucceed === true && hideContinue === false) ||
+			(invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_SHOW_ENABLE)
+			) {
+            nextElement1.addClass("enabledTopMenuItem");
+            nextElement1.removeClass("disabledTopMenuItem");
+            nextElement1.on("click", function () {
+                GetControlWindow().Control.Next();
+                return true;
+            });
+            nextElement1.attr("title", "");
+            nextElement1.attr("style", "display:inline");
+        }
+        else {
+            if (invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_DISABLE) {
+                nextElement1.addClass("disabledTopMenuItem");
+                nextElement1.removeClass("enabledTopMenuItem");
+                nextElement1.on("click", function () {
+                    //do nothing
+                });
+                if (hideContinue) {
+                    nextElement1.attr("title", IntegrationImplementation.GetString("You cannot use 'Next' with this item."));
+                }
+                else {
+                    nextElement1.attr("title", aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_CONTINUE].GetErrorString());
+                    if (exceptionText) {
+                        nextElement.title = exceptionText;
+                    }
+                }
+                nextElement1.attr("title", "");
+
+            }
+            else if (invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_HIDE) {
+                //nextElement.style.display = "none"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest assumes that this style will make the div invisible
+                nextElement1.attr("style", "display:none");
+            }
+        }
+    }
+
+    if (previousElement !== null) {
+        previousElement.title = IntegrationImplementation.GetString("Previous").toUpperCase();
+        if (
+			(aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_PREVIOUS].WillSucceed === true && hidePrevious === false) ||
+			(invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_SHOW_ENABLE)
+			) {
+            previousElement.className = ENABLED_TOP_MENU_ITEM_CLASSES;
+            previousElement.onclick = function () {
+                GetControlWindow().Control.Previous();
+                return true;
+            };
+            previousElement.style.display = "inline"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest assumes that this style will make the div visible
+        }
+        else {
+            if (invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_DISABLE) {
+                previousElement.className = DISABLED_TOP_MENU_ITEM_CLASSES;
+                previousElement.onclick = "";
+                if (hidePrevious) {
+                    previousElement.title = IntegrationImplementation.GetString("This lesson does not allow 'Previous' requests.");
+                }
+                else {
+                    exceptionText = aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_PREVIOUS].GetErrorString();
+                    if (exceptionText) {
+                        previousElement.title = exceptionText;
+                    }
+                }
+            }
+            else if (invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_HIDE) {
+                previousElement.style.display = "none"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest assumes that this style will make the div invisible
+            }
+        }
+    }
+
+    if (exitScoElement !== null) {
+        exitScoElement.title = IntegrationImplementation.GetString("Close Item").toUpperCase();
+        if (
+			(aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_EXIT].WillSucceed === true && hideExit === false) ||
+			(invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_SHOW_ENABLE)
+			) {
+            exitScoElement.className = ENABLED_TOP_MENU_ITEM_CLASSES;
+            exitScoElement.onclick = function () {
+                GetControlWindow().Control.CloseSco();
+                return true;
+            };
+            exitScoElement.style.display = "inline"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest assumes that this style will make the div visible
+        }
+        else {
+            if (invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_DISABLE) {
+                exitScoElement.className = DISABLED_TOP_MENU_ITEM_CLASSES;
+                exitScoElement.onclick = "";
+                if (hideExit) {
+                    exitScoElement.title = IntegrationImplementation.GetString("You cannot use 'Exit' with this item.");
+                }
+                else {
+                    exceptionText = aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_EXIT].GetErrorString();
+                    if (exceptionText) {
+                        exitScoElement.title = exceptionText;
+                    }
+                }
+            }
+            else if (invalidMenuItemAction == INVALID_MENU_ITEM_ACTION_HIDE) {
+                exitScoElement.style.display = "none"; // AMP 7-31-08 Do not change this string. The Scorm 2004 LMS Conformance AutoTest assumes that this style will make the div invisible
+            }
+        }
+    }
+
+    //We only want to disable the Exit button if it is is explicitly hidden by sequencing rules,
+    //otherwise, always enable it (regardless of what the look ahead sequencer says)
+    if (exitCourseElement !== null) {
+        exitCourseElement.title = IntegrationImplementation.GetString("Return to LMS").toUpperCase();
+        if (hideExitAll === true && hideSuspendAll === true && hideAbandonAll === true) {
+            exitCourseElement.className = DISABLED_TOP_MENU_ITEM_CLASSES;
+            exceptionText = aryPossibleRequests[POSSIBLE_NAVIGATION_REQUEST_INDEX_EXIT_ALL].GetErrorString();
+            if (exceptionText) {
+                exitCourseElement.title = exceptionText;
+            }
+        }
+        else {
+            exitCourseElement.className = ENABLED_TOP_MENU_ITEM_CLASSES;
+        }
+    }
+}
+
+function Integration_UpdateProgressBar(doc, currentActivity) {
+
+    // Progress bar
+    var progressText = doc.getElementById("progressText");
+    var totalProgressImage = doc.getElementById("totalProgressImage");
+
+    //if using measure for progress display, measureProgressImage will be present, otherwise progressImage will be present
+    var progressImage = doc.getElementById("progressImage");
+    var measureProgressImage = doc.getElementById("measureProgressImage");
+
+    if (progressText !== null) {
+        var intProgressPercent;
+        var intRemainingPercent;
+
+        if (progressImage !== null) {
+
+
+            if (this.NumDeliverableScos === null) {
+                this.NumDeliverableScos = Control.Activities.GetNumDeliverableActivities();
+            }
+
+            //find the number of complete and not failed activities
+            var activityList = Control.Activities.ActivityList;
+            var numComplete = 0;
+            for (var i = 0; i < activityList.length; i++) {
+                if (activityList[i].IsDeliverable()) {
+
+                    if (activityList[i].IsCompleted() === true && activityList[i].IsSatisfied() !== false) {
+                        numComplete++;
+                    }
+                }
+            }
+
+            progressText.innerHTML = numComplete + " / " + this.NumDeliverableScos;
+
+            intProgressPercent = parseInt((numComplete / this.NumDeliverableScos) * 100, 10);
+            intRemainingPercent = 100 - intProgressPercent;
+
+            totalProgressImage.width = intRemainingPercent;
+            progressImage.width = intProgressPercent;
+            progressImage.src = "images/progressX.gif";
+        }
+        else {
+
+            var rootActivity = currentActivity;
+            if (rootActivity !== null) {
+                while (rootActivity.IsTheRoot() !== true) {
+                    rootActivity = rootActivity.ParentActivity;
+                }
+
+                var progressAmount = rootActivity.GetAttemptCompletionAmount();
+                intProgressPercent = parseInt(progressAmount * 100, 10);
+            }
+            else {
+                intProgressPercent = 0;
+            }
+
+            intRemainingPercent = 100 - intProgressPercent;
+
+            progressText.innerHTML = intProgressPercent + "% Complete";
+
+            totalProgressImage.width = intRemainingPercent;
+            measureProgressImage.width = intProgressPercent;
+            measureProgressImage.src = "images/progressX.gif";
+
+        }
+    }
+
+}
+
+function Integration_PreOverallSequencingProcess() {
+    // Default implementation does nothing here
+}
+
+//The DOM can be manipulated here to add custom modifications to the menu
+//This method will be called whenever the menu is modified by the existing SW
+//Code here must be robust enough to handle being called multiple times.
+function Integration_OverrideMenuLookAndFeel(documentObject) {
+
+
+}
+
+
+$(document).ready(function () {
+    var mq = Modernizr.mq('only all'); //check for media query capability
+    //alert("media query : " + mq);
+    if (mq) {
+        if (Modernizr.mq('only all and (max-width: 400px)')) {
+            //iphone
+            $("#toggleMenu").removeClass("btn-sm");
+            $("#toggleMenu").addClass("btn-xs");
+
+            $("#previous").removeClass("btn-sm");
+            $("#previous").addClass("btn-xs");
+
+            $("#next").removeClass("btn-sm");
+            $("#next").addClass("btn-xs");
+
+            $("#closeSco").removeClass("btn-sm");
+            $("#closeSco").addClass("btn-xs");
+
+            $("#returnToLms").removeClass("btn-sm");
+            $("#returnToLms").addClass("btn-xs");
+
+            $("#help").removeClass("btn-sm");
+            $("#help").addClass("btn-xs");
+        } else {
+            $("#toggleMenu").addClass("btn-sm");
+            $("#toggleMenu").removeClass("btn-xs");
+        }
+    } else {
+        // looks like we're dealing with IE here
+        //create the sidebar-icon image if needed
+        //$("#sidebar-text").hide();
+        //$("#sidebar-icon").show();
+
+        $("#title").removeClass("hidden-xs");
+
+        $('#menu-container').removeClass('col-xs-11');
+
+        $('#previous-text').show();
+        $('#previous-text').removeClass("visible-lg");
+        $('#previous-icon').removeClass("hidden-md");
+        $('#previous-icon').removeClass("hidden-lg");
+        $('#previous-icon').hide();
+
+
+        $('#next-text').show();
+        $('#next-text').removeClass("visible-lg");
+        $('#next-icon').hide();
+        $('#next-icon').removeClass("hidden-md");
+        $('#next-icon').removeClass("hidden-lg");
+
+        $('#close-text').show();
+        $('#close-text').removeClass("visible-lg");
+        $('#close-icon').hide();
+        $('#close-icon').removeClass("hidden-md");
+        $('#close-icon').removeClass("hidden-lg");
+
+        $('#exit-text').show();
+        $('#exit-text').removeClass("visible-lg");
+        $('#exit-icon').hide();
+        $('#exit-icon').removeClass("hidden-md");
+        $('#exit-icon').removeClass("hidden-lg");
+
+        $('#help-text').show();
+        $('#help-text').removeClass("visible-lg");
+        $('#help-icon').hide();
+        $('#help-icon').removeClass("hidden-md");
+        $('#help-icon').removeClass("hidden-lg");
+    }
+
+    //sets up our attempt to scale non-responsive content on mobile
+    if (isMobile) {
+        SetupContentScaling();
+    }
+});
+
+function SetupContentScaling() {
+
+    //wrapping iframe so that we can get rid of extra blank space caused by iframe before shrinking
+    $('#ContentDiv iframe').wrap('<div id="ModernPlayerScalingWrapper" style="height:100%;overflow:visible;margin:0;padding:0"></div>');
+
+    //once iframe loads run through and check for whether we need to scale
+    $('#ContentDiv iframe').on('load', function () {
+
+        var $iframe = $(this);
+        var $iframeWrapper = $('#ModernPlayerScalingWrapper');
+        var $contentDiv = $('#ContentDiv'); //div that contains all this; has to fit within its width
+        var $iframeDoc = $(this.contentWindow.document);
+        var $contentFrames = $iframeDoc.find('frame');
+        var $contentBody = $iframeDoc.find('body');
+
+        //need to hook into load of all content frames to check them for scrolling content
+        $contentFrames.on('load.modernPlayer', function () {
+
+            //mark whether the iframe is scalable (not cross-domain or containing flash content)
+            $(this).toggleClass('rs-mp-canscale', GetFrameBodyElement(this) != null);
+
+            //scale iframe to updated size
+            setScaling();
+        });
+
+        //re-scale when window resizes (or orientation change on mobile)
+        $(window).on('resize.modernPlayer', function () {
+            setScaling();
+        });
+
+        //intial load for body only
+        setScaling();
+
+        //Private functions ---
+
+        function setScaling() {
+
+            //skipping if we haven't actually set this for scaling yet
+            if ($iframe.hasClass('rs-mp-scaled')) {
+
+                //set iframe width/scaling back to normal so we can get 
+                //correct numbers for scaling
+                $iframeWrapper.css({ 'height': '100%', 'overflow': 'visible' });
+
+                $iframe.css({
+                    '-ms-transform': '',
+                    '-moz-transform': '',
+                    '-o-transform': '',
+                    '-webkit-transform': '',
+                    'transform': '',
+                    'width': '100%',
+                    'height': '100%'
+                })
+                .removeClass('rs-mp-scaled');
+
+            }
+
+            //go through all frames/body to look if any content is wider than viewport
+            var contentDivWidth = $contentDiv.width();
+            var largestWidth = contentDivWidth || 0;
+            var totalHeight = 0;
+            var scaleFactor = 1;
+
+            //check body of the iframe (if not using frameset, this will be relevant)
+            if ($contentBody.length) {
+                largestWidth = Math.max(largestWidth, $contentBody[0].scrollWidth || 0);
+                totalHeight = $contentBody[0].scrollHeight || 0;
+            }
+            else {
+                //check for any frame content that's larger
+                $contentFrames.filter('.rs-mp-canscale').each(function () {
+                    var body = GetFrameBodyElement(this);
+                    var width = body.scrollWidth || 0;
+                    var height = body.scrollHeight || 0;
+
+                    //TODO: This only really works if this is a
+                    //frameset with a single column; would need more work to
+                    //examine ROWS/COLS attributes of the FRAMESET to add widths
+                    //together for other situations
+                    largestWidth = Math.max(largestWidth, width);
+                    totalHeight = totalHeight + height;
+                });
+            }
+
+            //in case we're not able to get accurate height of content, or it's
+            //shorter than the height we already have . . .
+            totalHeight = Math.max(totalHeight, $contentDiv.height() || 0);
+
+            //amount to scale is based on the width only
+            scaleFactor = contentDivWidth / largestWidth;
+
+            //only scaling if we need to shrink content
+            if (scaleFactor < 1) {
+
+                //resize container div to match shrunk iframe, so no unnecessary scrollbars
+                //causes by whitespace left in place where iframe used to be before
+                //scaling (scale doesn't reflow the document)
+                $iframeWrapper.css({ 'height': (totalHeight * scaleFactor) + 40 + 'px', 'overflow': 'hidden' });
+
+                //have to set width/height on iframe to the content width/height before
+                //scaling or you just end up with a small iframe with tiny scrollbars . . .
+                $iframe.css({
+                    'width': largestWidth + 'px',
+                    'height': totalHeight + 'px',
+                    '-ms-transform': 'scale(' + scaleFactor + ')',
+                    '-ms-transform-origin': '0 0',
+                    '-moz-transform': 'scale(' + scaleFactor + ')',
+                    '-moz-transform-origin': '0 0',
+                    '-o-transform': 'scale(' + scaleFactor + ')',
+                    '-o-transform-origin': '0 0',
+                    '-webkit-transform': 'scale(' + scaleFactor + ')',
+                    '-webkit-transform-origin': '0 0',
+                    'transform': 'scale(' + scaleFactor + ')',
+                    'transform-origin': '0 0'
+                })
+                .addClass('rs-mp-scaled');
+
+            }
+        }
+
+    });
+}
+
+//will return a reference to the BODY tag of the frame content
+//or null if the frame is cross-domain or BODY is otherwise
+//unavailable to us
+function GetFrameBodyElement(frame) {
+    try {
+        //this line will fail if cross domain, or no body tag
+        return frame.contentWindow.document.getElementsByTagName('body')[0];
+
+    } catch (e) {
+        return null;
+    }
+}
+
+function GetControlWindow() {
+    if (!this.controlWindow) {
+        var controlWindow = window;
+        var control = controlWindow.Control;
+        var depth = 0;
+        var maxDepth = 10;
+
+        while (!(control || depth > maxDepth)) {
+            controlWindow = window.parent;
+            control = controlWindow.Control;
+            depth++;
+        }
+        this.controlWindow = controlWindow;
+    }
+    return this.controlWindow;
+}
+
+if (window.location.toString().toLowerCase().indexOf("preventrightclick=true") > 0) {
+    window.document.oncontextmenu = function () { return false; };
+}
+
+function initializeTopControls() {
+    // If Netscape pre 7.1, disable hide/show due to bug in Netscape rendering
+    if (UserBrowserIsNetscapeVerOlderThan7_1()) {
+        document.getElementById("menuToggle").style.display = "none";
+    }
+}
+
+function UserBrowserIsNetscapeVerOlderThan7_1() {
+    var result = false;
+    var netscapeLocation = navigator.userAgent.indexOf("Netscape/");
+
+    if (netscapeLocation > -1) {
+        // The version number follows the slash.
+        var versionString = navigator.userAgent.substr(netscapeLocation + 9);
+        var versionParts = versionString.split('.');
+        try {
+            var majorVersion = versionParts[0];
+            var minorVersion = "." + versionParts[1];
+
+            // Look for Netscape versions earlier than 7.1
+            if (majorVersion < 7 || (majorVersion == 7 && minorVersion < 1)) {
+                result = true;
+            }
+        }
+        catch (e) {
+            result = false;
+        }
+    }
+
+    return result;
+}
+
+var mq = Modernizr.mq('only all'); //check for media query capability
+
+if (mq) {
+    var viewPortTag = document.createElement('meta');
+    viewPortTag.id = "viewport";
+    viewPortTag.name = "viewport";
+    viewPortTag.content = "width=device-width, initial-scale=1";
+    var headElement = document.getElementsByTagName('head')[0];
+    headElement.insertBefore(viewPortTag, headElement.firstChild);
+}

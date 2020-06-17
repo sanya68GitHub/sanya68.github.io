@@ -1,0 +1,2986 @@
+var SCORM_TRUE="true";
+var SCORM_FALSE="false";
+var SCORM_ERROR_NONE=0;
+var SCORM_ERROR_GENERAL=101;
+var SCORM_ERROR_INVALID_ARG=201;
+var SCORM_ERROR_NO_CHILDREN=202;
+var SCORM_ERROR_NO_COUNT=203;
+var SCORM_ERROR_NOT_INITIALIZED=301;
+var SCORM_ERROR_NOT_IMPLEMENTED=401;
+var SCORM_ERROR_ELEMENT_IS_KEYWORD=402;
+var SCORM_ERROR_READ_ONLY=403;
+var SCORM_ERROR_WRITE_ONLY=404;
+var SCORM_ERROR_INCORRECT_DATA_TYPE=405;
+var SCORM_ErrorStrings=new Array(11);
+SCORM_ErrorStrings[SCORM_ERROR_NONE]="No Error";
+SCORM_ErrorStrings[SCORM_ERROR_GENERAL]="General exception";
+SCORM_ErrorStrings[SCORM_ERROR_INVALID_ARG]="Invalid argument error";
+SCORM_ErrorStrings[SCORM_ERROR_NO_CHILDREN]="Element cannot have children";
+SCORM_ErrorStrings[SCORM_ERROR_NO_COUNT]="Element not an array - cannot have count";
+SCORM_ErrorStrings[SCORM_ERROR_NOT_INITIALIZED]="Not Initialized";
+SCORM_ErrorStrings[SCORM_ERROR_NOT_IMPLEMENTED]="Not implemented error";
+SCORM_ErrorStrings[SCORM_ERROR_ELEMENT_IS_KEYWORD]="Invalid set value, element is a keyword";
+SCORM_ErrorStrings[SCORM_ERROR_READ_ONLY]="Element is read only";
+SCORM_ErrorStrings[SCORM_ERROR_WRITE_ONLY]="Element is write only";
+SCORM_ErrorStrings[SCORM_ERROR_INCORRECT_DATA_TYPE]="Incorrect Data Type";
+function DataModelSupport(_1,_2,_3){
+this.Supported=_1;
+this.SupportsRead=_2;
+this.SupportsWrite=_3;
+}
+var arySupportedElements=new Array(50);
+arySupportedElements["cmi._version"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.student_id"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.student_name"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.lesson_location"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.core.credit"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.lesson_status"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.core.entry"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.score._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.score.raw"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.core.total_time"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.lesson_mode"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.core.exit"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.core.session_time"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.suspend_data"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.launch_data"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.objectives._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.objectives._count"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.objectives.n.id"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.objectives.n.score._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.objectives.n.score.raw"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.objectives.n.score.max"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.objectives.n.score.min"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.objectives.n.status"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.core.score.max"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.core.score.min"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.comments"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.comments_from_lms"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.student_data._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.student_data.mastery_score"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.student_data.max_time_allowed"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.student_data.time_limit_action"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.student_preference._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.student_preference.audio"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.student_preference.language"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.student_preference.speed"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.student_preference.text"]=new DataModelSupport(true,true,true);
+arySupportedElements["cmi.interactions._children"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.interactions._count"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.interactions.n.id"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.objectives._count"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.interactions.n.objectives.n.id"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.time"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.type"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.correct_responses._count"]=new DataModelSupport(true,true,false);
+arySupportedElements["cmi.interactions.n.correct_responses.n.pattern"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.weighting"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.student_response"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.result"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.latency"]=new DataModelSupport(true,false,true);
+arySupportedElements["cmi.interactions.n.text"]=new DataModelSupport(true,false,true);
+var aryVocabularies=new Array(4);
+aryVocabularies["exit"]=new Array(SCORM_EXIT_TIME_OUT,SCORM_EXIT_SUSPEND,SCORM_EXIT_LOGOUT,SCORM_EXIT_UNKNOWN);
+aryVocabularies["status"]=new Array(SCORM_STATUS_PASSED,SCORM_STATUS_COMPLETED,SCORM_STATUS_FAILED,SCORM_STATUS_INCOMPLETE,SCORM_STATUS_BROWSED,SCORM_STATUS_NOT_ATTEMPTED);
+aryVocabularies["interaction"]=new Array(SCORM_TRUE_FALSE,SCORM_CHOICE,SCORM_FILL_IN,SCORM_MATCHING,SCORM_PERFORMANCE,SCORM_SEQUENCING,SCORM_LIKERT,SCORM_NUMERIC);
+aryVocabularies["result"]=new Array(SCORM_CORRECT,SCORM_WRONG,SCORM_UNANTICIPATED,SCORM_NEUTRAL);
+var SCORM_CORE_CHILDREN="student_id,student_name,lesson_location,credit,lesson_status,entry,total_time,lesson_mode,exit,session_time,score";
+var SCORM_CORE_SCORE_CHILDREN="raw,min,max";
+var SCORM_STUDENT_DATA_CHILDREN="mastery_score,max_time_allowed,time_limit_action";
+var SCORM_STUDENT_PREFERENCE_CHILDREN="audio,language,speed,text";
+var SCORM_OBJECTIVES_CHILDREN="id,score,status";
+var SCORM_OBJECTIVES_SCORE_CHILDREN="raw,min,max";
+var SCORM_INTERACTIONS_CHILDREN="id,objectives,time,type,correct_responses,weighting,student_response,result,latency";
+var SCORM_CMI_VERSION="3.4";
+function RunTimeApi(_4,_5){
+this.LearnerId=_4;
+this.LearnerName=_5;
+this.ErrorNumber=SCORM_ERROR_NONE;
+this.ErrorString="";
+this.ErrorDiagnostic="";
+this.TrackedStartDate=null;
+this.TrackedEndDate=null;
+this.Initialized=false;
+this.ScoCalledFinish=false;
+this.CloseOutSessionCalled=false;
+this.RunTimeData=null;
+this.LearningObject=null;
+this.Activity=null;
+this.StatusSetInCurrentSession=false;
+this.LearnerPrefsArray=new Object();
+this.IsLookAheadSequencerDataDirty=false;
+this.IsLookAheadSequencerRunning=false;
+}
+RunTimeApi.prototype.GetNavigationRequest=RunTimeApi_GetNavigationRequest;
+RunTimeApi.prototype.ResetState=RunTimeApi_ResetState;
+RunTimeApi.prototype.InitializeForDelivery=RunTimeApi_InitializeForDelivery;
+RunTimeApi.prototype.SetDirtyData=RunTimeApi_SetDirtyData;
+RunTimeApi.prototype.WriteHistoryLog=RunTimeApi_WriteHistoryLog;
+RunTimeApi.prototype.WriteHistoryReturnValue=RunTimeApi_WriteHistoryReturnValue;
+RunTimeApi.prototype.WriteAuditLog=RunTimeApi_WriteAuditLog;
+RunTimeApi.prototype.WriteAuditReturnValue=RunTimeApi_WriteAuditReturnValue;
+RunTimeApi.prototype.WriteDetailedLog=RunTimeApi_WriteDetailedLog;
+RunTimeApi.prototype.CloseOutSession=RunTimeApi_CloseOutSession;
+RunTimeApi.prototype.NeedToCloseOutSession=RunTimeApi_NeedToCloseOutSession;
+RunTimeApi.prototype.AccumulateTotalTimeTracked=RunTimeApi_AccumulateTotalTimeTracked;
+RunTimeApi.prototype.InitTrackedTimeStart=RunTimeApi_InitTrackedTimeStart;
+RunTimeApi.prototype.LookAheadSessionClose=RunTimeApi_LookAheadSessionClose;
+RunTimeApi.prototype.SetLookAheadDirtyDataFlagIfNeeded=RunTimeApi_SetLookAheadDirtyDataFlagIfNeeded;
+RunTimeApi.prototype.RunLookAheadSequencerIfNeeded=RunTimeApi_RunLookAheadSequencerIfNeeded;
+RunTimeApi.prototype.ImmediateRollup=RunTimeApi_ImmediateRollup;
+RunTimeApi.prototype.GetCombinedCompletionSuccessStatus=RunTimeApi_GetCombinedCompletionSuccessStatus;
+function RunTimeApi_GetNavigationRequest(){
+return null;
+}
+function RunTimeApi_ResetState(){
+this.ErrorNumber=SCORM_ERROR_NONE;
+this.ErrorString="";
+this.ErrorDiagnostic="";
+this.TrackedStartDate=null;
+this.TrackedEndDate=null;
+this.Initialized=false;
+this.Terminated=false;
+this.RunTimeData=null;
+this.LearningObject=null;
+this.Activity=null;
+this.StatusSetInCurrentSession=false;
+this.ScoCalledFinish=false;
+}
+function RunTimeApi_InitializeForDelivery(_6){
+this.ErrorNumber=SCORM_ERROR_NONE;
+this.ErrorString="";
+this.ErrorDiagnostic="";
+this.TrackedStartDate=null;
+this.TrackedEndDate=null;
+this.Initialized=false;
+this.StatusSetInCurrentSession=false;
+this.ScoCalledFinish=false;
+this.RunTimeData=_6.RunTime;
+this.LearningObject=_6.LearningObject;
+this.Activity=_6;
+this.InitialTotalTimeTracked=this.RunTimeData.TotalTimeTracked;
+this.InitialSessionTimeTracked=this.RunTimeData.SessionTimeTracked;
+this.InitialActivityExperiencedDurationTracked=this.Activity.GetActivityExperiencedDurationTracked();
+this.InitialActivityExperiencedDurationReported=this.Activity.GetActivityExperiencedDurationReported();
+this.InitialAttemptExperiencedDurationTracked=this.Activity.GetAttemptExperiencedDurationTracked();
+this.InitialAttemptExperiencedDurationReported=this.Activity.GetAttemptExperiencedDurationReported();
+var _7=this.RunTimeData.Exit!=SCORM_EXIT_SUSPEND&&this.RunTimeData.Exit!=SCORM_EXIT_LOGOUT;
+if(_7){
+this.Activity.SetAttemptStartTimestampUtc(ConvertDateToIso8601String(new Date()));
+this.Activity.SetAttemptAbsoluteDuration("PT0H0M0S");
+this.Activity.SetAttemptExperiencedDurationTracked("PT0H0M0S");
+this.Activity.SetAttemptExperiencedDurationReported("PT0H0M0S");
+if(Control.Package.Properties.ResetRunTimeDataTiming==RESET_RT_DATA_TIMING_WHEN_EXIT_IS_NOT_SUSPEND||Control.Package.Properties.ResetRunTimeDataTiming==RESET_RT_DATA_TIMING_ON_EACH_NEW_SEQUENCING_ATTEMPT){
+var _8={ev:"ResetRuntime",ai:this.Activity.ItemIdentifier,at:this.Activity.LearningObject.Title};
+this.WriteHistoryLog("",_8);
+this.RunTimeData.ResetState();
+}
+}
+}
+function RunTimeApi_SetDirtyData(){
+this.Activity.DataState=DATA_STATE_DIRTY;
+}
+function RunTimeApi_WriteAuditLog(_9){
+Debug.WriteRteAudit(_9);
+}
+function RunTimeApi_WriteAuditReturnValue(_a){
+Debug.WriteRteAuditReturnValue(_a);
+}
+function RunTimeApi_WriteDetailedLog(_b){
+Debug.WriteRteDetailed(_b);
+}
+function RunTimeApi_WriteHistoryLog(_c,_d){
+HistoryLog.WriteEventDetailed(_c,_d);
+}
+function RunTimeApi_WriteHistoryReturnValue(_e,_f){
+HistoryLog.WriteEventDetailedReturnValue(_e,_f);
+}
+function RunTimeApi_NeedToCloseOutSession(){
+return !this.CloseOutSessionCalled;
+}
+RunTimeApi.prototype.LMSInitialize=RunTimeApi_Initialize;
+RunTimeApi.prototype.LMSFinish=RunTimeApi_Finish;
+RunTimeApi.prototype.LMSSetValue=RunTimeApi_SetValue;
+RunTimeApi.prototype.LMSGetValue=RunTimeApi_GetValue;
+RunTimeApi.prototype.LMSCommit=RunTimeApi_Commit;
+RunTimeApi.prototype.LMSGetLastError=RunTimeApi_GetLastError;
+RunTimeApi.prototype.LMSGetErrorString=RunTimeApi_GetErrorString;
+RunTimeApi.prototype.LMSGetDiagnostic=RunTimeApi_GetDiagnostic;
+function RunTimeApi_Initialize(arg){
+this.WriteAuditLog("`1711`"+arg+"')");
+var _11={ev:"ApiInitialize"};
+if(this.Activity){
+_11.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_11);
+_11={};
+if(this.Activity){
+_11.activityIdentifier=this.Activity.ItemIdentifier;
+}
+var _12;
+var _13;
+arg=CleanExternalString(arg);
+this.ClearErrorState();
+_12=this.CheckForInitializeError(arg);
+if(!_12){
+_13=SCORM_FALSE;
+}else{
+if(this.TrackedStartDate==null){
+this.TrackedStartDate=new Date();
+}
+if(this.StartSessionTotalTime==null&&this.Activity){
+this.StartSessionTotalTime=this.Activity.RunTime.TotalTime;
+}
+this.Initialized=true;
+_13=SCORM_TRUE;
+}
+Control.ScoLoader.ScoLoaded=true;
+this.WriteAuditReturnValue(_13);
+return _13;
+}
+function RunTimeApi_Finish(arg){
+this.WriteAuditLog("`1742`"+arg+"')");
+var _15;
+arg=CleanExternalString(arg);
+this.ClearErrorState();
+_15=this.CheckForFinishError(arg);
+var _16=(_15&&(this.ScoCalledFinish===false));
+if(_15===false){
+returnValue=SCORM_FALSE;
+}else{
+var _17={ev:"ApiTerminate"};
+if(this.Activity){
+_17.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_17);
+this.LookAheadSessionClose();
+this.CloseOutSession("Api.Finish()");
+this.SetDirtyData();
+this.Initialized=false;
+this.ScoCalledFinish=true;
+Control.DoCommit(true);
+returnValue=SCORM_TRUE;
+}
+if(_16===true&&Control.IsThereAPendingNavigationRequest()===false){
+var _18=Control.Sequencer.GetExitAction(this.Activity,true,Control.Sequencer.LogSeqAudit("`1435`"));
+if(_18!=EXIT_ACTION_DO_NOTHING&&!this.DeliverFramesetUnloadEventCalled){
+window.setTimeout("Control.ScoHasTerminatedSoUnload();",150);
+}
+}
+Control.SignalTerminated();
+this.WriteAuditReturnValue(returnValue);
+return returnValue;
+}
+function RunTimeApi_SetValue(_19,_1a){
+this.WriteAuditLog("`1731`"+_19+"`1761`"+_1a+"')");
+var _1b;
+var _1c;
+this.ClearErrorState();
+_19=CleanExternalString(_19);
+_1a=CleanExternalString(_1a);
+var _1d=RemoveIndiciesFromCmiElement(_19);
+var _1e=ExtractIndex(_19);
+var _1f=ExtractSecondaryIndex(_19);
+_1b=this.CheckForSetValueError(_19,_1a,_1d,_1e,_1f);
+if(!_1b){
+_1c=SCORM_FALSE;
+}else{
+this.StoreValue(_19,_1a,_1d,_1e,_1f);
+this.SetDirtyData();
+_1c=SCORM_TRUE;
+}
+this.WriteAuditReturnValue(_1c);
+return _1c;
+}
+function RunTimeApi_GetValue(_20){
+this.WriteAuditLog("`1730`"+_20+"')");
+var _21;
+var _22;
+this.ClearErrorState();
+_20=CleanExternalString(_20);
+var _23=RemoveIndiciesFromCmiElement(_20);
+var _24=ExtractIndex(_20);
+var _25=ExtractSecondaryIndex(_20);
+_22=this.CheckForGetValueError(_20,_23,_24,_25);
+if(!_22){
+_21="";
+}else{
+_21=this.RetrieveGetValueData(_20,_23,_24,_25);
+if(_21===null){
+_21="";
+}
+}
+this.WriteAuditReturnValue(_21);
+return _21;
+}
+function RunTimeApi_Commit(arg){
+this.WriteAuditLog("`1741`"+arg+"')");
+var _27;
+arg=CleanExternalString(arg);
+this.ClearErrorState();
+_27=this.CheckForCommitError(arg);
+if(_27&&Control.DoCommit()){
+returnValue=SCORM_TRUE;
+}else{
+returnValue=SCORM_FALSE;
+}
+this.RunLookAheadSequencerIfNeeded(true);
+this.WriteAuditReturnValue(returnValue);
+return returnValue;
+}
+function RunTimeApi_GetLastError(){
+this.WriteAuditLog("`1672`");
+var _28=this.ErrorNumber;
+this.WriteAuditReturnValue(_28);
+return _28;
+}
+function RunTimeApi_GetErrorString(_29){
+this.WriteAuditLog("`1619`"+_29+"')");
+var _2a;
+_29=CleanExternalString(_29);
+if(SCORM_ErrorStrings[_29]===undefined||SCORM_ErrorStrings[_29]===null){
+_2a="";
+}else{
+_2a=SCORM_ErrorStrings[_29];
+}
+this.WriteAuditReturnValue(_2a);
+return _2a;
+}
+function RunTimeApi_GetDiagnostic(_2b){
+this.WriteAuditLog("`1649`"+_2b+"')");
+var _2c;
+_2b=CleanExternalString(_2b);
+if(_2b==this.ErrorNumber||_2b===""||_2b===null){
+if(this.ErrorDiagnostic.length>0){
+_2c=this.ErrorDiagnostic;
+}else{
+_2c="No diagnostic information is available.";
+}
+}else{
+_2c="No diagnostic information available for error number ("+_2b+") ";
+}
+this.WriteAuditReturnValue(_2c);
+return _2c;
+}
+RunTimeApi.prototype.SetErrorState=RunTimeApi_SetErrorState;
+RunTimeApi.prototype.ClearErrorState=RunTimeApi_ClearErrorState;
+RunTimeApi.prototype.CheckForInitializeError=RunTimeApi_CheckForInitializeError;
+RunTimeApi.prototype.CheckForFinishError=RunTimeApi_CheckForFinishError;
+RunTimeApi.prototype.CheckForCommitError=RunTimeApi_CheckForCommitError;
+RunTimeApi.prototype.CheckForSetValueError=RunTimeApi_CheckForSetValueError;
+RunTimeApi.prototype.StoreValue=RunTimeApi_StoreValue;
+RunTimeApi.prototype.CheckForGetValueError=RunTimeApi_CheckForGetValueError;
+RunTimeApi.prototype.RetrieveGetValueData=RunTimeApi_RetrieveGetValueData;
+RunTimeApi.prototype.GetCombinedCompletionSuccessStatus=RunTimeApi_GetCombinedCompletionSuccessStatus;
+RunTimeApi.prototype.JoinCommentsArray=RunTimeApi_JoinCommentsArray;
+RunTimeApi.prototype.IsValidVocabElement=RunTimeApi_IsValidVocabElement;
+RunTimeApi.prototype.ImmediateRollup=RunTimeApi_ImmediateRollup;
+function RunTimeApi_SetErrorState(_2d,_2e){
+if(_2d!=SCORM_ERROR_NONE){
+this.WriteDetailedLog("`1292`"+_2d+" - "+_2e);
+}
+this.ErrorNumber=_2d;
+this.ErrorDiagnostic=_2e;
+}
+function RunTimeApi_ClearErrorState(){
+this.ErrorNumber=SCORM_ERROR_NONE;
+this.ErrorDiagnostic="";
+}
+function RunTimeApi_CheckForInitializeError(arg){
+this.WriteDetailedLog("`1422`");
+if(arg!==""){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"Invalid argument to LMSInitialize (arg="+arg+")");
+return false;
+}
+if(this.Initialized===true){
+this.SetErrorState(SCORM_ERROR_GENERAL,"LMSInitialize has already been called.");
+return false;
+}
+this.WriteDetailedLog("`1615`");
+return true;
+}
+function RunTimeApi_CheckForFinishError(arg){
+this.WriteDetailedLog("`1507`");
+if(this.Initialized===false){
+this.SetErrorState(SCORM_ERROR_NOT_INITIALIZED,"Finished called when not initialized.");
+return false;
+}
+if(arg!==""){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"Invalid argument to LMSFinish (arg="+arg+")");
+return false;
+}
+this.WriteDetailedLog("`1615`");
+return true;
+}
+function RunTimeApi_CheckForCommitError(arg){
+this.WriteDetailedLog("`1506`");
+if(this.Initialized===false){
+this.SetErrorState(SCORM_ERROR_NOT_INITIALIZED,"Commit called when not initialized.");
+return false;
+}
+if(arg!==""){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"Invalid argument to LMSCommit (arg="+arg+")");
+return false;
+}
+this.WriteDetailedLog("`1615`");
+return true;
+}
+function RunTimeApi_CheckForSetValueError(_32,_33,_34,_35,_36){
+this.WriteDetailedLog("`1548`"+_32+", "+_33+", "+_34+", "+_35+", "+_36+") ");
+if(this.Initialized===false){
+this.SetErrorState(SCORM_ERROR_NOT_INITIALIZED,"SetValue called when not initialized. strElement-"+_32+" strValue-"+_33);
+return false;
+}
+if(!(arySupportedElements[_34]===undefined||arySupportedElements[_34]===null)){
+if(arySupportedElements[_34].Supported===false){
+Debug.AssertError("Should not have any un-implemented vocab elements");
+this.SetErrorState(SCORM_ERROR_NOT_IMPLEMENTED,"The parameter '"+_32+"' is not implemented.");
+return false;
+}
+if(_34.search(/_children$/)>0||_34.search(/_count$/)>0){
+this.SetErrorState(SCORM_ERROR_ELEMENT_IS_KEYWORD,"The parameter '"+_32+"' is a keyword and cannot be written to.");
+return false;
+}
+if(arySupportedElements[_34].SupportsWrite===false){
+this.SetErrorState(SCORM_ERROR_READ_ONLY,"The parameter '"+_32+"' is read-only.");
+return false;
+}
+}else{
+if(_34.search(/._children$/)>0){
+_34=_34.replace("._children","");
+if(arySupportedElements[_34]!==undefined&&arySupportedElements[_34]!==null){
+this.SetErrorState(SCORM_ERROR_NO_CHILDREN,"The parameter '"+_34+"' does not support the _children keyword.");
+return false;
+}
+}else{
+if(_34.search(/._count$/)>0){
+_34=_34.replace("._count","");
+if(arySupportedElements[strBaseElement]!==undefined&&arySupportedElements[strBaseElement]!==null){
+this.SetErrorState(SCORM_ERROR_NO_COUNT,"The parameter '"+_34+"' does not support the _count keyword.");
+return false;
+}
+}
+}
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The parameter '"+_32+"' is not recognized.");
+return false;
+}
+var _37=null;
+var _38;
+switch(_34){
+case "cmi.core.lesson_location":
+this.WriteDetailedLog("`1476`");
+if(_33.length>255){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.lesson_location may not be greater than 255 characters, your value ("+_33+") is "+_33.length+" characters.");
+_37=false;
+}
+break;
+case "cmi.core.lesson_status":
+this.WriteDetailedLog("`1513`");
+if(!this.IsValidVocabElement(_33,"status")){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value for cmi.core.lesson_status is not in the CMI vocabulary. Your value: "+_33);
+_37=false;
+}
+if(_33==SCORM_STATUS_NOT_ATTEMPTED){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.lesson_status cannot be set to 'not attempted'.  This value may only be set by the LMS upon initialization.");
+_37=false;
+}
+break;
+case "cmi.core.exit":
+this.WriteDetailedLog("`1696`");
+if(!this.IsValidVocabElement(_33,"exit")){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value for cmi.core.exit is not in the CMI vocabulary. Your value: "+_33);
+_37=false;
+}
+break;
+case "cmi.core.session_time":
+this.WriteDetailedLog("`1532`");
+if(!IsValidCMITimeSpan(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value for cmi.core.session_time is not formatted properly. Your value: "+_33);
+_37=false;
+}
+break;
+case "cmi.core.score.raw":
+this.WriteDetailedLog("`1585`");
+if(_33!==""){
+if(IsValidCMIDecimal(_33)){
+_38=parseFloat(_33);
+if(_38<0||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.score.raw must be a valid decimal between 0 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.score.raw must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.core.score.max":
+this.WriteDetailedLog("`1583`");
+if(_33!==""){
+if(IsValidCMIDecimal(_33)){
+_38=parseFloat(_33);
+if(_38<0||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.score.max must be a valid decimal between 0 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.score.max must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.core.score.min":
+this.WriteDetailedLog("`1584`");
+if(_33!==""){
+if(IsValidCMIDecimal(_33)){
+_38=parseFloat(_33);
+if(_38<0||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.score.min must be a valid decimal between 0 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.score.min must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.suspend_data":
+this.WriteDetailedLog("`1536`");
+if(_33.length>Control.Package.Properties.SuspendDataMaxLength){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.core.suspend_data may not be greater than "+Control.Package.Properties.SuspendDataMaxLength+" characters, your value is "+_33.length+" characters. Your value\n"+_33);
+_37=false;
+}
+break;
+case "cmi.objectives.n.id":
+this.WriteDetailedLog("`1515`");
+if(!IsValidCMIIdentifier(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value '"+_33+"' is not a valid CMI Identifier");
+_37=false;
+}
+if(!this.RunTimeData.IsValidObjectiveIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, objective indicies must be set sequentially starting with 0");
+_37=false;
+}
+break;
+case "cmi.objectives.n.status":
+this.WriteDetailedLog("`1432`");
+if(!this.RunTimeData.IsValidObjectiveIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, objective indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!this.IsValidVocabElement(_33,"status")){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value for cmi.objectives.n.status is not in the CMI vocabulary. Your value: "+_33);
+_37=false;
+}
+break;
+case "cmi.objectives.n.score.raw":
+this.WriteDetailedLog("`1376`");
+if(!this.RunTimeData.IsValidObjectiveIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, objective indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(_33!==""){
+if(IsValidCMIDecimal(_33)){
+_38=parseFloat(_33);
+if(_38<0||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.objectives.n.score.raw must be a valid decimal between 0 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.objectives.score.raw must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.objectives.n.score.min":
+this.WriteDetailedLog("`1375`");
+if(!this.RunTimeData.IsValidObjectiveIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, objective indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(_33!==""){
+if(IsValidCMIDecimal(_33)){
+_38=parseFloat(_33);
+if(_38<0||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.objectives.n.score.min must be a valid decimal between 0 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.objectives.score.min must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.objectives.n.score.max":
+this.WriteDetailedLog("`1374`");
+if(!this.RunTimeData.IsValidObjectiveIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, objective indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(_33!==""){
+if(IsValidCMIDecimal(_33)){
+_38=parseFloat(_33);
+if(_38<0||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.objectives.n.score.max must be a valid decimal between 0 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.objectives.score.max must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.comments":
+this.WriteDetailedLog("`1600`");
+if(_33.length>4096){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.comments may not be greater than 4096 characters, your value ("+_33+") is "+_33.length+" characters.");
+_37=false;
+}
+break;
+case "cmi.student_preference.audio":
+this.WriteDetailedLog("`1669`");
+if(IsValidCMISInteger(_33)){
+_38=parseInt(_33,10);
+if(_38<-1||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.audio must be a valid integer between -1 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.audio must be a valid signed integer.  Your value is: "+_33);
+_37=false;
+}
+break;
+case "cmi.student_preference.language":
+this.WriteDetailedLog("`1601`");
+if(_33.length>255){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.language may not be greater than 255 characters, your value ("+_33+") is "+_33.length+" characters.");
+_37=false;
+}
+break;
+case "cmi.student_preference.speed":
+this.WriteDetailedLog("`1671`");
+if(IsValidCMISInteger(_33)){
+_38=parseInt(_33,10);
+if(_38<-100||_38>100){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.audio must be a valid integer between -100 and 100.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.audio must be a valid signed integer.  Your value is: "+_33);
+_37=false;
+}
+break;
+case "cmi.student_preference.text":
+this.WriteDetailedLog("`1698`");
+if(IsValidCMISInteger(_33)){
+_38=parseInt(_33,10);
+if(_38<-1||_38>1){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.audio must be a valid integer between -1 and 1.  Your value is: "+_38);
+_37=false;
+}
+}else{
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.student_preference.audio must be a valid signed integer.  Your value is: "+_33);
+_37=false;
+}
+break;
+case "cmi.interactions.n.id":
+this.WriteDetailedLog("`1474`");
+if(!IsValidCMIIdentifier(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value '"+_33+"' is not a valid CMI Identifier");
+_37=false;
+}
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+break;
+case "cmi.interactions.n.objectives.n.id":
+this.WriteDetailedLog("`1270`");
+if(!IsValidCMIIdentifier(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value '"+_33+"' is not a valid CMI Identifier");
+_37=false;
+}
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!this.RunTimeData.IsValidInteractionObjectiveIndex(_35,_36)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_36+"' is not valid, interaction objective indicies must be set sequentially starting with 0");
+_37=false;
+}
+break;
+case "cmi.interactions.n.time":
+this.WriteDetailedLog("`1429`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!IsValidCMITime(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.time must be a valid time.  Your value is: "+_33);
+_37=false;
+}
+break;
+case "cmi.interactions.n.type":
+this.WriteDetailedLog("`1426`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!this.IsValidVocabElement(_33,"interaction")){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value for cmi.interactions.n.type is not in the CMI vocabulary. Your value: "+_33);
+_37=false;
+}
+if(this.RunTimeData.Interactions[_35]!==undefined){
+if(this.RunTimeData.Interactions[_35].LearnerResponse!==null){
+if(!IsValidCMIFeedback(_33,this.RunTimeData.Interactions[_35].LearnerResponse)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.type must be consistent with previously recorded student response.  Your value is: "+_33);
+_37=false;
+}
+}
+for(var i=0;i<this.RunTimeData.Interactions[_35].CorrectResponses.length;i++){
+if(!IsValidCMIFeedback(_33,this.RunTimeData.Interactions[_35].CorrectResponses[i])){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.type must be consistent with previously recorded correct response ("+i+" - "+this.RunTimeData.Interactions[_35].CorrectResponses[i]+").  Your value is: "+_33);
+_37=false;
+}
+}
+}
+break;
+case "cmi.interactions.n.correct_responses.n.pattern":
+this.WriteDetailedLog("`1023`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!this.RunTimeData.IsValidInteractionCorrectResponseIndex(_35,_36)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_36+"' is not valid, interaction correct response indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(this.RunTimeData.Interactions[_35]!==undefined){
+if(!IsValidCMIFeedback(this.RunTimeData.Interactions[_35].Type,_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.student_response must be a valid CMIFeedback - value must be consistent with interaction type.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.interactions.n.weighting":
+this.WriteDetailedLog("`1335`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!IsValidCMIDecimal(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.weighting must be a valid decimal.  Your value is: "+_33);
+_37=false;
+}
+break;
+case "cmi.interactions.n.student_response":
+this.WriteDetailedLog("`1215`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(this.RunTimeData.Interactions[_35]!==undefined){
+if(!IsValidCMIFeedback(this.RunTimeData.Interactions[_35].Type,_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.student_response must be a valid CMIFeedback - value must be consistent with interaction type.  Your value is: "+_33);
+_37=false;
+}
+}
+break;
+case "cmi.interactions.n.result":
+this.WriteDetailedLog("`1392`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!this.IsValidVocabElement(_33,"result")&&!IsValidCMIDecimal(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"The value for cmi.interactions.n.result is not in the CMI vocabulary. Your value: "+_33);
+_37=false;
+}
+break;
+case "cmi.interactions.n.latency":
+this.WriteDetailedLog("`1372`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(!IsValidCMITimeSpan(_33)){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.latency must be a valid timespan.  Your value is: "+_33);
+_37=false;
+}
+break;
+case "cmi.interactions.n.text":
+this.WriteDetailedLog("`1428`");
+if(!this.RunTimeData.IsValidInteractionIndex(_35)){
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The index '"+_35+"' is not valid, interaction indicies must be set sequentially starting with 0");
+_37=false;
+}
+if(_33.length>500){
+this.SetErrorState(SCORM_ERROR_INCORRECT_DATA_TYPE,"cmi.interactions.n.text may not be greater than 500 characters, your value is "+_33.length+" characters. Your value\n"+_33);
+_37=false;
+}
+break;
+default:
+this.WriteDetailedLog("`1617`");
+this.SetErrorState(SCORM_ERROR_GENERAL,"Setting the data element you requested is not supported although it is listed as being supported, please contact technical support.  Element-"+_32);
+_37=false;
+break;
+}
+if(_37===null){
+_37=true;
+}else{
+_37=false;
+}
+if(_37==true){
+this.WriteDetailedLog("`1615`");
+}
+return _37;
+}
+function RunTimeApi_StoreValue(_3a,_3b,_3c,_3d,_3e){
+this.WriteDetailedLog("`1738`"+_3a+", "+_3b+", "+_3c+", "+_3d+", "+_3e+") ");
+switch(_3c){
+case "cmi.core.lesson_location":
+this.WriteDetailedLog("`1476`");
+this.RunTimeData.Location=_3b;
+break;
+case "cmi.core.lesson_status":
+this.WriteDetailedLog("`1513`");
+this.WriteDetailedLog("`1458`"+this.StatusSetInCurrentSession+"`1614`"+this.RunTimeData.CompletionStatus);
+var _3f;
+if(this.StatusSetInCurrentSession||(this.RunTimeData.SuccessStatus==TranslateSingleStatusIntoSuccess(_3b)&&this.RunTimeData.CompletionStatus==TranslateSingleStatusIntoCompletion(_3b))||this.RunTimeData.CompletionStatus!=SCORM_STATUS_COMPLETED||(this.RunTimeData.CompletionStatus==SCORM_STATUS_COMPLETED&&this.RunTimeData.SuccessStatus==SCORM_STATUS_FAILED)||_3b=="passed"||Control.Package.Properties.AllowCompleteStatusChange===true){
+this.WriteDetailedLog("`1567`");
+this.StatusSetInCurrentSession=true;
+this.RunTimeData.CompletionStatusChangedDuringRuntime=true;
+if(_3b=="passed"||_3b=="failed"){
+this.RunTimeData.SuccessStatusChangedDuringRuntime=true;
+}
+var _40=this.RunTimeData.SuccessStatus;
+var _41=this.RunTimeData.CompletionStatus;
+this.RunTimeData.SuccessStatus=TranslateSingleStatusIntoSuccess(_3b);
+this.RunTimeData.CompletionStatus=TranslateSingleStatusIntoCompletion(_3b);
+this.SetLookAheadDirtyDataFlagIfNeeded(this.RunTimeData.SuccessStatus,_40);
+this.SetLookAheadDirtyDataFlagIfNeeded(this.RunTimeData.CompletionStatus,_41);
+this.RunLookAheadSequencerIfNeeded();
+_3f={ev:"Set",v:_3b};
+if(_3b=="passed"||_3b=="failed"){
+_3f.k="success";
+}else{
+_3f.k="completion";
+}
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+this.ImmediateRollup();
+}
+break;
+case "cmi.core.exit":
+this.WriteDetailedLog("`1696`");
+_3f={ev:"Set",k:"cmi.exit",v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Exit=_3b;
+break;
+case "cmi.core.session_time":
+this.WriteDetailedLog("`1531`");
+this.RunTimeData.SessionTime=ConvertCmiTimeSpanToIso8601TimeSpan(_3b);
+this.WriteDetailedLog("`1745`"+this.RunTimeData.SessionTime);
+_3f={ev:"Set",k:"session time",vh:ConvertIso8601TimeSpanToHundredths(this.RunTimeData.SessionTime)};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+break;
+case "cmi.core.score.raw":
+this.WriteDetailedLog("`1585`");
+_3f={ev:"Set",k:"score.raw",v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+if(_3b===""){
+_3b=null;
+}
+this.SetLookAheadDirtyDataFlagIfNeeded(this.RunTimeData.ScoreRaw,_3b);
+this.RunTimeData.ScoreRaw=_3b;
+this.RunLookAheadSequencerIfNeeded();
+this.RunTimeData.ScoreScaled=NormalizeRawScore(this.RunTimeData.ScoreRaw,this.RunTimeData.ScoreMin,this.RunTimeData.ScoreMax);
+break;
+case "cmi.core.score.max":
+this.WriteDetailedLog("`1583`");
+_3f={ev:"Set",k:"score.max",v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+if(_3b===""){
+_3b=null;
+}
+this.SetLookAheadDirtyDataFlagIfNeeded(this.RunTimeData.ScoreMax,_3b);
+this.RunTimeData.ScoreMax=_3b;
+this.RunLookAheadSequencerIfNeeded();
+break;
+case "cmi.core.score.min":
+this.WriteDetailedLog("`1584`");
+_3f={ev:"Set",k:"score.min",v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+if(_3b===""){
+_3b=null;
+}
+this.SetLookAheadDirtyDataFlagIfNeeded(this.RunTimeData.ScoreMin,_3b);
+this.RunTimeData.ScoreMin=_3b;
+this.RunLookAheadSequencerIfNeeded();
+break;
+case "cmi.suspend_data":
+this.WriteDetailedLog("`1535`");
+this.RunTimeData.SuspendData=_3b;
+break;
+case "cmi.objectives.n.id":
+this.WriteDetailedLog("`1515`");
+if(this.RunTimeData.Objectives.length<=_3d){
+this.WriteDetailedLog("`1401`"+_3d);
+this.RunTimeData.AddObjective();
+}
+_3f={ev:"Set",k:"objectives id",i:_3d,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Objectives[_3d].Identifier=_3b;
+break;
+case "cmi.objectives.n.status":
+this.WriteDetailedLog("`1432`");
+if(this.RunTimeData.Objectives.length<=_3d){
+this.WriteDetailedLog("`1401`"+_3d);
+this.RunTimeData.AddObjective();
+}
+this.RunTimeData.Objectives[_3d].SuccessStatus=TranslateSingleStatusIntoSuccess(_3b);
+this.RunTimeData.Objectives[_3d].CompletionStatus=TranslateSingleStatusIntoCompletion(_3b);
+_3f={ev:"Set",k:"objectives success",i:_3d,v:TranslateSingleStatusIntoSuccess(_3b)};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Objectives[_3d].Identifier){
+_3f.intid=this.RunTimeData.Objectives[_3d].Identifier;
+}
+this.WriteHistoryLog("",_3f);
+_3f={ev:"Set",k:"objectives completion",i:_3d,v:TranslateSingleStatusIntoCompletion(_3b)};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Objectives[_3d].Identifier){
+_3f.intid=this.RunTimeData.Objectives[_3d].Identifier;
+}
+this.WriteHistoryLog("",_3f);
+break;
+case "cmi.objectives.n.score.raw":
+this.WriteDetailedLog("`1376`");
+if(this.RunTimeData.Objectives.length<=_3d){
+this.WriteDetailedLog("`1401`"+_3d);
+this.RunTimeData.AddObjective();
+}
+if(_3b===""){
+_3b=null;
+}
+this.RunTimeData.Objectives[_3d].ScoreRaw=_3b;
+break;
+case "cmi.objectives.n.score.min":
+this.WriteDetailedLog("`1375`");
+if(this.RunTimeData.Objectives.length<=_3d){
+this.WriteDetailedLog("`1401`"+_3d);
+this.RunTimeData.AddObjective();
+}
+if(_3b===""){
+_3b=null;
+}
+this.RunTimeData.Objectives[_3d].ScoreMin=_3b;
+break;
+case "cmi.objectives.n.score.max":
+this.WriteDetailedLog("`1374`");
+if(this.RunTimeData.Objectives.length<=_3d){
+this.WriteDetailedLog("`1401`"+_3d);
+this.RunTimeData.AddObjective();
+}
+if(_3b===""){
+_3b=null;
+}
+this.RunTimeData.Objectives[_3d].ScoreMax=_3b;
+break;
+case "cmi.comments":
+this.WriteDetailedLog("`1185`"+this.RunTimeData.Comments.length);
+var _42=new ActivityRunTimeComment(null,null,null,null,null,null);
+_42.SetCommentValue(_3b);
+this.RunTimeData.Comments[this.RunTimeData.Comments.length]=_42;
+break;
+case "cmi.student_preference.audio":
+this.WriteDetailedLog("`1669`");
+this.RunTimeData.AudioLevel=_3b;
+if(Control.Package.Properties.MakeStudentPrefsGlobalToCourse===true){
+this.LearnerPrefsArray.AudioLevel=_3b;
+}
+break;
+case "cmi.student_preference.language":
+this.WriteDetailedLog("`1601`");
+this.RunTimeData.LanguagePreference=_3b;
+if(Control.Package.Properties.MakeStudentPrefsGlobalToCourse===true){
+this.LearnerPrefsArray.LanguagePreference=_3b;
+}
+break;
+case "cmi.student_preference.speed":
+this.WriteDetailedLog("`1671`");
+this.RunTimeData.DeliverySpeed=_3b;
+if(Control.Package.Properties.MakeStudentPrefsGlobalToCourse===true){
+this.LearnerPrefsArray.DeliverySpeed=_3b;
+}
+break;
+case "cmi.student_preference.text":
+this.WriteDetailedLog("`1698`");
+this.RunTimeData.AudioCaptioning=_3b;
+if(Control.Package.Properties.MakeStudentPrefsGlobalToCourse===true){
+this.LearnerPrefsArray.AudioCaptioning=_3b;
+}
+break;
+case "cmi.interactions.n.id":
+this.WriteDetailedLog("`1474`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+_3f={ev:"Set",k:"interactions id",i:_3d,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Id=_3b;
+break;
+case "cmi.interactions.n.objectives.n.id":
+this.WriteDetailedLog("`1270`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+_3f={ev:"Set",k:"interactions objectives id",i:_3d,si:_3e,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Objectives[_3e]=_3b;
+break;
+case "cmi.interactions.n.time":
+this.WriteDetailedLog("`1429`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+var _43=ConvertCmiTimeToIso8601Time(_3b);
+_3f={ev:"Set",k:"interactions timestamp",i:_3d,v:_43};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Interactions[_3d].Id){
+_3f.intid=this.RunTimeData.Interactions[_3d].Id;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Timestamp=_43;
+break;
+case "cmi.interactions.n.type":
+this.WriteDetailedLog("`1426`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+_3f={ev:"Set",k:"interactions type",i:_3d,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Interactions[_3d].Id){
+_3f.intid=this.RunTimeData.Interactions[_3d].Id;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Type=_3b;
+break;
+case "cmi.interactions.n.correct_responses.n.pattern":
+this.WriteDetailedLog("`1024`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+_3f={ev:"Set",k:"interactions correct_responses pattern",i:_3d,si:_3e,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].CorrectResponses[_3e]=_3b;
+break;
+case "cmi.interactions.n.weighting":
+this.WriteDetailedLog("`1335`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+this.RunTimeData.Interactions[_3d].Weighting=_3b;
+break;
+case "cmi.interactions.n.student_response":
+this.WriteDetailedLog("`1215`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+_3f={ev:"Set",k:"interactions learner_response",i:_3d,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Interactions[_3d].Id){
+_3f.intid=this.RunTimeData.Interactions[_3d].Id;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].LearnerResponse=_3b;
+break;
+case "cmi.interactions.n.result":
+this.WriteDetailedLog("`1392`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+if(_3b==SCORM_WRONG){
+_3b=SCORM_INCORRECT;
+}
+_3f={ev:"Set",k:"interactions result",i:_3d,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Interactions[_3d].Id){
+_3f.intid=this.RunTimeData.Interactions[_3d].Id;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Result=_3b;
+break;
+case "cmi.interactions.n.latency":
+this.WriteDetailedLog("`1372`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+var _44=ConvertCmiTimeSpanToIso8601TimeSpan(_3b);
+_3f={ev:"Set",k:"interactions latency",i:_3d,vh:ConvertIso8601TimeSpanToHundredths(_44)};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Interactions[_3d].Id){
+_3f.intid=this.RunTimeData.Interactions[_3d].Id;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Latency=_44;
+break;
+case "cmi.interactions.n.text":
+this.WriteDetailedLog("`1428`");
+if(this.RunTimeData.Interactions.length<=_3d){
+this.WriteDetailedLog("`1314`"+_3d);
+this.RunTimeData.AddInteraction();
+}
+_3f={ev:"Set",k:"interactions description",i:_3d,v:_3b};
+if(this.Activity){
+_3f.ai=this.Activity.ItemIdentifier;
+}
+if(this.RunTimeData.Interactions[_3d].Id){
+_3f.intid=this.RunTimeData.Interactions[_3d].Id;
+}
+this.WriteHistoryLog("",_3f);
+this.RunTimeData.Interactions[_3d].Description=_3b;
+break;
+default:
+Debug.AssertError("Unrecognized data model element in StoreData");
+this.SetErrorState(SCORM_ERROR_GENERAL,"Setting the data element you requested is not supported although it is listed as being supported, please contact technical support.  Element-"+strElement);
+return false;
+}
+return true;
+}
+function RunTimeApi_CheckForGetValueError(_45,_46,_47,_48){
+this.WriteDetailedLog("`1547`"+_45+", "+_46+", "+_47+", "+_48+") ");
+if(this.Initialized===false){
+this.SetErrorState(SCORM_ERROR_NOT_INITIALIZED,"GetValue called when not initialized. element-"+_45);
+return false;
+}
+if(arySupportedElements[_46]!==undefined&&arySupportedElements[_46]!==null){
+if(!arySupportedElements[_46].Supported){
+this.SetErrorState(SCORM_ERROR_NOT_IMPLEMENTED,"The parameter '"+_45+"' is not implemented.");
+return false;
+}
+if(!arySupportedElements[_46].SupportsRead){
+this.SetErrorState(SCORM_ERROR_WRITE_ONLY,"The parameter '"+_45+"' is write-only.");
+return false;
+}
+}else{
+if(_46.search(/._children$/)>0){
+strBaseElement=_46.replace("._children","");
+if(arySupportedElements[strBaseElement]!==undefined&&arySupportedElements[_45]!==null){
+this.SetErrorState(SCORM_ERROR_NO_CHILDREN,"The parameter '"+_45+"' does not support the _children keyword.");
+return false;
+}
+}else{
+if(_46.search(/._count$/)>0){
+strBaseElement=_46.replace("._count","");
+if(arySupportedElements[strBaseElement]!==undefined&&arySupportedElements[_45]!==null){
+this.SetErrorState(SCORM_ERROR_NO_COUNT,"The parameter '"+_45+"' does not support the _count keyword.");
+return false;
+}
+}
+}
+this.SetErrorState(SCORM_ERROR_INVALID_ARG,"The parameter '"+_45+"' is not recognized.");
+return false;
+}
+this.WriteDetailedLog("`1615`");
+return true;
+}
+function RunTimeApi_RetrieveGetValueData(_49,_4a,_4b,_4c){
+this.WriteDetailedLog("`1576`"+_49+", "+_4a+", "+_4b+", "+_4c+") ");
+var _4d="";
+switch(_4a){
+case "cmi.core._children":
+this.WriteDetailedLog("`1491`");
+_4d=SCORM_CORE_CHILDREN;
+break;
+case "cmi.core.student_id":
+this.WriteDetailedLog("`1573`");
+_4d=this.LearnerId;
+break;
+case "cmi.core.student_name":
+this.WriteDetailedLog("`1534`");
+_4d=this.LearnerName;
+break;
+case "cmi.core.lesson_location":
+this.WriteDetailedLog("`1475`");
+_4d=this.RunTimeData.Location;
+var _4e={ev:"Get",k:"location",v:(_4d==null?"<null>":_4d)};
+if(this.Activity){
+_4e.ai=this.Activity.ItemIdentifier;
+}
+this.WriteHistoryLog("",_4e);
+break;
+case "cmi.core.credit":
+this.WriteDetailedLog("`1648`");
+_4d=this.RunTimeData.Credit;
+break;
+case "cmi.core.lesson_status":
+this.WriteDetailedLog("`1512`");
+_4d=TranslateDualStausToSingleStatus(this.RunTimeData.CompletionStatus,this.RunTimeData.SuccessStatus);
+break;
+case "cmi.core.entry":
+this.WriteDetailedLog("`1670`");
+_4d=this.RunTimeData.Entry;
+break;
+case "cmi.core.score._children":
+this.WriteDetailedLog("`1478`");
+_4d=SCORM_CORE_SCORE_CHILDREN;
+break;
+case "cmi.core.score.raw":
+this.WriteDetailedLog("`1585`");
+_4d=this.RunTimeData.ScoreRaw;
+break;
+case "cmi.core.score.max":
+this.WriteDetailedLog("`1583`");
+_4d=this.RunTimeData.ScoreMax;
+break;
+case "cmi.core.score.min":
+this.WriteDetailedLog("`1584`");
+_4d=this.RunTimeData.ScoreMin;
+break;
+case "cmi.core.total_time":
+this.WriteDetailedLog("`1574`");
+_4d=ConvertIso8601TimeSpanToCmiTimeSpan(this.RunTimeData.TotalTime);
+break;
+case "cmi.core.lesson_mode":
+this.WriteDetailedLog("`1556`");
+_4d=this.RunTimeData.Mode;
+break;
+case "cmi.suspend_data":
+this.WriteDetailedLog("`1535`");
+_4d=this.RunTimeData.SuspendData;
+break;
+case "cmi.launch_data":
+this.WriteDetailedLog("`1554`");
+_4d=this.LearningObject.DataFromLms;
+break;
+case "cmi.objectives._children":
+this.WriteDetailedLog("`1373`");
+_4d=SCORM_OBJECTIVES_CHILDREN;
+break;
+case "cmi.objectives._count":
+this.WriteDetailedLog("`1431`");
+_4d=this.RunTimeData.Objectives.length;
+break;
+case "cmi.objectives.n.id":
+this.WriteDetailedLog("`1515`");
+if(this.RunTimeData.Objectives[_4b]===null||this.RunTimeData.Objectives[_4b]===undefined||this.RunTimeData.Objectives[_4b].Identifier===null){
+this.WriteDetailedLog("`957`");
+_4d="";
+}else{
+_4d=this.RunTimeData.Objectives[_4b].Identifier;
+}
+break;
+case "cmi.objectives.n.status":
+this.WriteDetailedLog("`1432`");
+if(this.RunTimeData.Objectives.length<(_4b+1)||this.RunTimeData.Objectives[_4b]===null||this.RunTimeData.Objectives[_4b]===undefined||this.RunTimeData.Objectives[_4b].CompletionStatus===null||this.RunTimeData.Objectives[_4b].SuccessStatus===null){
+this.WriteDetailedLog("`957`");
+_4d="";
+}else{
+_4d=TranslateDualStausToSingleStatus(this.RunTimeData.Objectives[_4b].CompletionStatus,this.RunTimeData.Objectives[_4b].SuccessStatus);
+}
+break;
+case "cmi.objectives.n.score._children":
+this.WriteDetailedLog("`1271`");
+_4d=SCORM_OBJECTIVES_SCORE_CHILDREN;
+break;
+case "cmi.objectives.n.score.raw":
+this.WriteDetailedLog("`1376`");
+if(this.RunTimeData.Objectives.length<(_4b+1)||this.RunTimeData.Objectives[_4b]===null||this.RunTimeData.Objectives[_4b]===undefined||this.RunTimeData.Objectives[_4b].ScoreRaw===null){
+this.WriteDetailedLog("`957`");
+_4d="";
+}else{
+_4d=this.RunTimeData.Objectives[_4b].ScoreRaw;
+}
+break;
+case "cmi.objectives.n.score.max":
+this.WriteDetailedLog("`1374`");
+if(this.RunTimeData.Objectives.length<(_4b+1)||this.RunTimeData.Objectives[_4b]===null||this.RunTimeData.Objectives[_4b]===undefined||this.RunTimeData.Objectives[_4b].ScoreMax===null){
+this.WriteDetailedLog("`957`");
+_4d="";
+}else{
+_4d=this.RunTimeData.Objectives[_4b].ScoreMax;
+}
+break;
+case "cmi.objectives.n.score.min":
+this.WriteDetailedLog("`1375`");
+if(this.RunTimeData.Objectives.length<(_4b+1)||this.RunTimeData.Objectives[_4b]===null||this.RunTimeData.Objectives[_4b]===undefined||this.RunTimeData.Objectives[_4b].ScoreMin===null){
+this.WriteDetailedLog("`957`");
+_4d="";
+}else{
+_4d=this.RunTimeData.Objectives[_4b].ScoreMin;
+}
+break;
+case "cmi.comments":
+this.WriteDetailedLog("`1600`");
+_4d=this.JoinCommentsArray(this.RunTimeData.Comments);
+break;
+case "cmi.comments_from_lms":
+this.WriteDetailedLog("`1424`");
+_4d=this.JoinCommentsArray(this.RunTimeData.CommentsFromLMS);
+break;
+case "cmi.student_data._children":
+this.WriteDetailedLog("`1340`");
+_4d=SCORM_STUDENT_DATA_CHILDREN;
+break;
+case "cmi.student_data.mastery_score":
+this.WriteDetailedLog("`1514`");
+if(this.LearningObject.MasteryScore===null){
+_4d="";
+}else{
+_4d=this.LearningObject.MasteryScore;
+}
+break;
+case "cmi.student_data.max_time_allowed":
+this.WriteDetailedLog("`1446`");
+_4d=ConvertIso8601TimeSpanToCmiTimeSpan(this.LearningObject.MaxTimeAllowed);
+break;
+case "cmi.student_data.time_limit_action":
+this.WriteDetailedLog("`1433`");
+_4d=this.LearningObject.TimeLimitAction;
+break;
+case "cmi.student_preference._children":
+this.WriteDetailedLog("`1237`");
+_4d=SCORM_STUDENT_PREFERENCE_CHILDREN;
+break;
+case "cmi.student_preference.audio":
+this.WriteDetailedLog("`1669`");
+if(this.RunTimeData.AudioLevel===null){
+_4d="";
+}else{
+_4d=Math.round(this.RunTimeData.AudioLevel);
+}
+break;
+case "cmi.student_preference.language":
+this.WriteDetailedLog("`1601`");
+_4d=this.RunTimeData.LanguagePreference;
+break;
+case "cmi.student_preference.speed":
+this.WriteDetailedLog("`1671`");
+if(this.RunTimeData.DeliverySpeed===null){
+_4d="";
+}else{
+_4d=Math.round(this.RunTimeData.DeliverySpeed);
+}
+break;
+case "cmi.student_preference.text":
+this.WriteDetailedLog("`1698`");
+_4d=this.RunTimeData.AudioCaptioning;
+break;
+case "cmi.interactions._children":
+this.WriteDetailedLog("`1332`");
+_4d=SCORM_INTERACTIONS_CHILDREN;
+break;
+case "cmi.interactions._count":
+this.WriteDetailedLog("`1390`");
+_4d=this.RunTimeData.Interactions.length;
+break;
+case "cmi.interactions.n.objectives._count":
+this.WriteDetailedLog("`1189`");
+if(this.RunTimeData.Interactions.length<(_4b+1)||this.RunTimeData.Interactions[_4b]===null||this.RunTimeData.Interactions[_4b]===undefined){
+this.WriteDetailedLog("`1650`"+_4b+"`1729`");
+_4d=0;
+}else{
+_4d=this.RunTimeData.Interactions[_4b].Objectives.length;
+}
+break;
+case "cmi.interactions.n.correct_responses._count":
+this.WriteDetailedLog("`1038`");
+if(this.RunTimeData.Interactions.length<(_4b+1)||this.RunTimeData.Interactions[_4b]===null||this.RunTimeData.Interactions[_4b]===undefined){
+this.WriteDetailedLog("`1650`"+_4b+"`1729`");
+_4d=0;
+}else{
+_4d=this.RunTimeData.Interactions[_4b].CorrectResponses.length;
+}
+break;
+case "cmi._version":
+this.WriteDetailedLog("`1510`");
+_4d=SCORM_CMI_VERSION;
+break;
+default:
+Debug.AssertError("An unsupported data model element \""+_4a+"\" slipped through GetValue error detection.");
+SetErrorInfo(SCORM_ERROR_GENERAL,"Getting the data element you requested is not supported although it is listed as being supported, please contact technical support.  Element-"+strElement);
+_4d="";
+break;
+}
+return _4d;
+}
+function RunTimeApi_CloseOutSession(_4f){
+this.WriteDetailedLog("`1668`");
+var _50=this.LearningObject.MasteryScore;
+this.WriteDetailedLog("`1755`"+this.RunTimeData.Mode);
+this.WriteDetailedLog("`1752`"+this.RunTimeData.Credit);
+this.WriteDetailedLog("`1616`"+this.RunTimeData.CompletionStatus);
+this.WriteDetailedLog("`1701`"+this.RunTimeData.SuccessStatus);
+this.WriteDetailedLog("`1712`"+_50);
+this.WriteDetailedLog("`1754`"+this.RunTimeData.ScoreRaw);
+if(this.RunTimeData.Mode==SCORM_MODE_REVIEW){
+this.WriteDetailedLog("`1408`");
+}else{
+if(this.RunTimeData.Mode==SCORM_MODE_BROWSE&&this.RunTimeData.Credit==SCORM_CREDIT_NO){
+}else{
+if(this.RunTimeData.Credit==SCORM_CREDIT){
+this.WriteDetailedLog("`1541`");
+var _51=this.GetCombinedCompletionSuccessStatus();
+var _52=_51.CompletionStatus;
+if(_52!=this.RunTimeData.CompletionStatus){
+this.RunTimeData.CompletionStatus=_52;
+this.RunTimeData.CompletionStatusChangedDuringRuntime=true;
+}
+var _53=_51.SuccessStatus;
+if(_53!=this.RunTimeData.SuccessStatus){
+this.RunTimeData.SuccessStatus=_53;
+this.RunTimeData.SuccessStatusChangedDuringRuntime=true;
+}
+}
+}
+}
+if(this.RunTimeData.ScoreRaw!==null&&this.RunTimeData.ScoreRaw!==""){
+this.RunTimeData.ScoreScaled=NormalizeRawScore(this.RunTimeData.ScoreRaw,this.RunTimeData.ScoreMin,this.RunTimeData.ScoreMax);
+}
+if(this.RunTimeData.CompletionStatus==SCORM_STATUS_COMPLETED&&this.RunTimeData.SuccessStatus!=SCORM_STATUS_FAILED){
+this.WriteDetailedLog("`811`");
+if(Control.Package.Properties.LaunchCompletedRegsAsNoCredit){
+this.RunTimeData.Credit=SCORM_CREDIT_NO;
+}
+this.RunTimeData.Mode=SCORM_MODE_REVIEW;
+}
+if(this.RunTimeData.CompletionStatus==SCORM_STATUS_COMPLETED||this.RunTimeData.Exit!=SCORM_EXIT_SUSPEND){
+this.WriteDetailedLog("`1605`");
+this.RunTimeData.Entry=SCORM_ENTRY_NORMAL;
+}else{
+this.WriteDetailedLog("`1606`");
+this.RunTimeData.Entry=SCORM_ENTRY_RESUME;
+}
+if(this.RunTimeData.Exit==SCORM_EXIT_SUSPEND){
+this.Activity.SetSuspended(true);
+}else{
+this.Activity.SetSuspended(false);
+}
+var _54=this.RunTimeData.Objectives;
+for(var i=0;i<_54.length;i++){
+var _56=_54[i];
+if(_56.ScoreRaw!==null&&_56.ScoreRaw!==""){
+_56.ScoreScaled=NormalizeRawScore(_56.ScoreRaw,_56.ScoreMin,_56.ScoreMax);
+}
+}
+var _57=ConvertIso8601TimeSpanToHundredths(this.RunTimeData.SessionTime);
+var _58=ConvertIso8601TimeSpanToHundredths(this.RunTimeData.TotalTime);
+var _59=_57+_58;
+var _5a=ConvertHundredthsToIso8601TimeSpan(_59);
+this.WriteDetailedLog("`1728`"+this.RunTimeData.SessionTime+" ("+_57+"`1733`");
+this.WriteDetailedLog("`1713`"+this.RunTimeData.TotalTime+" ("+_58+"`1733`");
+this.WriteDetailedLog("`1700`"+_5a+" ("+_59+"`1733`");
+this.RunTimeData.TotalTime=_5a;
+this.RunTimeData.SessionTime="";
+this.AccumulateTotalTimeTracked();
+this.WriteDetailedLog("`1538`"+this.RunTimeData.TotalTimeTracked);
+this.CloseOutSessionCalled=true;
+}
+function RunTimeApi_JoinCommentsArray(_5b){
+var _5c="";
+for(var i=0;i<_5b.length;i++){
+_5c+=_5b[i].GetCommentValue();
+}
+return _5c;
+}
+function RunTimeApi_IsValidVocabElement(_5e,_5f){
+var _60;
+var i;
+_60=aryVocabularies[_5f];
+if(_60===undefined||_60===null){
+return false;
+}else{
+for(i=0;i<_60.length;i++){
+if(_60[i]==_5e){
+return true;
+}
+}
+return false;
+}
+}
+function RunTimeApi_InitTrackedTimeStart(_62){
+this.TrackedStartDate=new Date();
+this.StartSessionTotalTime=_62.RunTime.TotalTime;
+}
+function RunTimeApi_AccumulateTotalTimeTracked(){
+this.TrackedEndDate=new Date();
+var _63=Math.round((this.TrackedEndDate-this.TrackedStartDate)/10);
+var _64=ConvertIso8601TimeSpanToHundredths(this.InitialTotalTimeTracked);
+var _65=_63+_64;
+this.RunTimeData.TotalTimeTracked=ConvertHundredthsToIso8601TimeSpan(_65);
+var _66=ConvertIso8601TimeSpanToHundredths(this.InitialSessionTimeTracked);
+var _67=_63+_66;
+this.RunTimeData.SessionTimeTracked=ConvertHundredthsToIso8601TimeSpan(_67);
+this.Activity.ActivityEndedDate=this.TrackedEndDate;
+var _68=GetDateFromUtcIso8601Time(this.Activity.GetActivityStartTimestampUtc());
+var _69=GetDateFromUtcIso8601Time(this.Activity.GetAttemptStartTimestampUtc());
+this.Activity.SetActivityAbsoluteDuration(ConvertHundredthsToIso8601TimeSpan((this.TrackedEndDate-_68)/10));
+this.Activity.SetAttemptAbsoluteDuration(ConvertHundredthsToIso8601TimeSpan((this.TrackedEndDate-_69)/10));
+var _6a=ConvertIso8601TimeSpanToHundredths(this.InitialActivityExperiencedDurationTracked);
+var _6b=ConvertHundredthsToIso8601TimeSpan(_6a+_63);
+this.Activity.SetActivityExperiencedDurationTracked(_6b);
+var _6c=ConvertIso8601TimeSpanToHundredths(this.InitialActivityExperiencedDurationReported);
+var _6d=ConvertIso8601TimeSpanToHundredths(this.RunTimeData.TotalTime)-ConvertIso8601TimeSpanToHundredths(this.StartSessionTotalTime);
+var _6e=ConvertHundredthsToIso8601TimeSpan(_6c+_6d);
+this.Activity.SetActivityExperiencedDurationReported(_6e);
+var _6f=ConvertIso8601TimeSpanToHundredths(this.InitialAttemptExperiencedDurationTracked);
+var _70=ConvertHundredthsToIso8601TimeSpan(_6f+_63);
+this.Activity.SetAttemptExperiencedDurationTracked(_70);
+var _71=ConvertIso8601TimeSpanToHundredths(this.InitialAttemptExperiencedDurationReported);
+var _72=ConvertHundredthsToIso8601TimeSpan(_71+_6d);
+this.Activity.SetAttemptExperiencedDurationReported(_72);
+}
+function RunTimeApi_LookAheadSessionClose(){
+var _73=this.GetCombinedCompletionSuccessStatus();
+this.RunTimeData.LookAheadCompletionStatus=_73.CompletionStatus;
+this.RunTimeData.LookAheadSuccessStatus=_73.SuccessStatus;
+}
+function RunTimeApi_SetLookAheadDirtyDataFlagIfNeeded(_74,_75){
+if(this.IsLookAheadSequencerDataDirty==false&&_74!=_75){
+this.IsLookAheadSequencerDataDirty=true;
+}
+}
+function RunTimeApi_GetCombinedCompletionSuccessStatus(){
+var _76={CompletionStatus:this.RunTimeData.CompletionStatus,SuccessStatus:this.RunTimeData.SuccessStatus};
+var _77=this.LearningObject.MasteryScore;
+if(this.RunTimeData.CompletionStatus==SCORM_STATUS_UNKNOWN){
+this.WriteDetailedLog("`911`");
+if(_77===null||this.RunTimeData.ScoreRaw===null||this.RunTimeData.ScoreRaw===""){
+if(Control.Package.Properties.ForceObjectiveCompletionSetByContent==false){
+this.WriteDetailedLog("`945`");
+_76.CompletionStatus=SCORM_STATUS_COMPLETED;
+}else{
+this.WriteDetailedLog("`276`");
+}
+}else{
+if(this.RunTimeData.ScoreRaw>=_77){
+this.WriteDetailedLog("`1241`");
+_76.SuccessStatus=SCORM_STATUS_PASSED;
+_76.CompletionStatus=SCORM_STATUS_COMPLETED;
+}else{
+this.WriteDetailedLog("`1194`");
+_76.SuccessStatus=SCORM_STATUS_FAILED;
+_76.CompletionStatus=SCORM_STATUS_COMPLETED;
+}
+}
+}else{
+if(Control.Package.Properties.ScoreOverridesStatus){
+this.WriteDetailedLog("`755`");
+if(_77!==null&&_77!==""&&this.RunTimeData.ScoreRaw!==null&&this.RunTimeData.ScoreRaw!==""){
+if(this.RunTimeData.ScoreRaw>=_77){
+this.WriteDetailedLog("`1241`");
+_76.SuccessStatus=SCORM_STATUS_PASSED;
+_76.CompletionStatus=SCORM_STATUS_COMPLETED;
+}else{
+this.WriteDetailedLog("`1194`");
+if(Control.Package.Properties.CompletionStatOfFailedSuccessStat===SCORM_STATUS_COMPLETED||Control.Package.Properties.CompletionStatOfFailedSuccessStat===SCORM_STATUS_INCOMPLETE){
+_76.CompletionStatus=Control.Package.Properties.CompletionStatOfFailedSuccessStat;
+}else{
+_76.CompletionStatus=SCORM_STATUS_COMPLETED;
+}
+_76.SuccessStatus=SCORM_STATUS_FAILED;
+}
+}
+}
+}
+return _76;
+}
+function RunTimeApi_RunLookAheadSequencerIfNeeded(_78){
+if((Control.Package.Properties.LookaheadSequencerMode!=LOOKAHEAD_SEQUENCER_MODE_REALTIME&&_78!==true)||Control.Package.Properties.LookaheadSequencerMode==LOOKAHEAD_SEQUENCER_MODE_DISABLE){
+return;
+}
+if(this.RunTimeData!=null){
+this.LookAheadSessionClose();
+}
+if(this.IsLookAheadSequencerDataDirty===true&&!this.IsLookAheadSequencerRunning){
+this.IsLookAheadSequencerDataDirty=false;
+this.IsLookAheadSequencerRunning=true;
+window.setTimeout("Control.EvaluatePossibleNavigationRequests(true);",150);
+}
+}
+function RunTimeApi_ImmediateRollup(){
+try{
+this.WriteDetailedLog("`1361`");
+var _79=this.RunTimeData.CompletionStatus;
+var _7a=this.RunTimeData.SuccessStatus;
+var _7b=this.RunTimeData.CompletionStatusChangedDuringRuntime;
+var _7c=this.RunTimeData.SuccessStatusChangedDuringRuntime;
+var _7d=this.GetCombinedCompletionSuccessStatus();
+this.RunTimeData.CompletionStatus=_7d.CompletionStatus;
+this.RunTimeData.SuccessStatus=_7d.SuccessStatus;
+this.RunTimeData.CompletionStatusChangedDuringRuntime=true;
+this.RunTimeData.SuccessStatusChangedDuringRuntime=true;
+this.AccumulateTotalTimeTracked();
+if(this.RunTimeData.ScoreRaw!==null&&this.RunTimeData.ScoreRaw!==""){
+this.RunTimeData.ScoreScaled=NormalizeRawScore(this.RunTimeData.ScoreRaw,this.RunTimeData.ScoreMin,this.RunTimeData.ScoreMax);
+}
+this.WriteDetailedLog("`1277`");
+Control.Sequencer.CurrentActivity.TransferRteDataToActivity();
+this.WriteDetailedLog("`1539`");
+Control.Sequencer.RollupData(Control.Sequencer.CurrentActivity);
+this.RunTimeData.CompletionStatus=_79;
+this.RunTimeData.SuccessStatus=_7a;
+this.RunTimeData.CompletionStatusChangedDuringRuntime=_7b;
+this.RunTimeData.SuccessStatusChangedDuringRuntime=_7c;
+}
+catch(error){
+var _7e="RunTimeApi_ImmediateRollup Error: ";
+if(typeof RegistrationToDeliver!="undefined"&&typeof RegistrationToDeliver.Id!="undefined"){
+_7e=_7e+"RegistrationId: "+RegistrationToDeliver.Id+", ";
+}
+Control.Comm.LogOnServer(_7e,error);
+throw error;
+}
+}
+function Sequencer(_7f,_80){
+this.LookAhead=_7f;
+this.Activities=_80;
+this.NavigationRequest=null;
+this.SuspendedActivity=null;
+this.CurrentActivity=null;
+this.ExceptionText="";
+this.AtEndOfCourse=false;
+this.AtStartOfCourse=false;
+this.PrerequisitesEvaluator=new PrerequisitesEvaluator(this);
+}
+Sequencer.prototype.OverallSequencingProcess=Sequencer_OverallSequencingProcess;
+Sequencer.prototype.SetSuspendedActivity=Sequencer_SetSuspendedActivity;
+Sequencer.prototype.GetSuspendedActivity=Sequencer_GetSuspendedActivity;
+Sequencer.prototype.Start=Sequencer_Start;
+Sequencer.prototype.InitialRandomizationAndSelection=Sequencer_InitialRandomizationAndSelection;
+Sequencer.prototype.GetCurrentActivity=Sequencer_GetCurrentActivity;
+Sequencer.prototype.GetExceptionText=Sequencer_GetExceptionText;
+Sequencer.prototype.GetExitAction=Sequencer_GetExitAction;
+Sequencer.prototype.IsActivityLastOverall=Sequencer_IsActivityLastOverall;
+Sequencer.prototype.IsActivityFirstOverall=Sequencer_IsActivityFirstOverall;
+Sequencer.prototype.EvaluatePossibleNavigationRequests=Sequencer_EvaluatePossibleNavigationRequests;
+Sequencer.prototype.InitializePossibleNavigationRequestAbsolutes=Sequencer_InitializePossibleNavigationRequestAbsolutes;
+Sequencer.prototype.ContentDeliveryEnvironmentActivityDataSubProcess=Sequencer_ContentDeliveryEnvironmentActivityDataSubProcess;
+Sequencer.prototype.LogSeq=Sequencer_LogSeq;
+Sequencer.prototype.LogSeqAudit=Sequencer_LogSeqAudit;
+Sequencer.prototype.LogSeqReturn=Sequencer_LogSeqReturn;
+Sequencer.prototype.WriteHistoryLog=Sequencer_WriteHistoryLog;
+Sequencer.prototype.WriteHistoryReturnValue=Sequencer_WriteHistoryReturnValue;
+function Sequencer_OverallSequencingProcess(){
+try{
+var _81=this.LogSeqAudit("`1028`");
+this.ExceptionText="";
+this.LogSeq("`1277`",_81);
+this.CurrentActivity.TransferRteDataToActivity();
+if((this.CurrentActivity.LearningObject.ScormType===SCORM_TYPE_ASSET)&&this.CurrentActivity.WasLaunchedThisSession()){
+this.LogSeq("`776`",_81);
+this.CurrentActivity.SetAttemptProgressStatus(true);
+this.CurrentActivity.SetAttemptCompletionStatus(true);
+}
+this.LogSeq("`1539`",_81);
+this.RollupData(this.CurrentActivity,_81);
+this.LogSeq("`1403`",_81);
+if(Control.Package.Properties.FirstScoIsPretest===true){
+if(this.IsActivityFirstOverall(this.CurrentActivity)){
+if(this.CurrentActivity.IsSatisfied()===true){
+this.LogSeq("`1029`",_81);
+this.MarkAllActivitiesComplete();
+}
+}
+}
+if(this.NavigationRequest===null){
+var _82=this.GetExitAction(this.GetCurrentActivity(),false,_81);
+this.LogSeq("`1240`"+_82,_81);
+var _83="";
+if(_82==EXIT_ACTION_EXIT_CONFIRMATION||_82==EXIT_ACTION_DISPLAY_MESSAGE){
+var _84=Control.Activities.GetRootActivity();
+var _85=(_84.IsCompleted()||_84.IsSatisfied());
+if(_85===true){
+_83=IntegrationImplementation.GetString("The course is now complete. Please make a selection to continue.");
+}else{
+_83=IntegrationImplementation.GetString("Please make a selection to continue.");
+}
+}
+switch(_82){
+case (EXIT_ACTION_EXIT_NO_CONFIRMATION):
+this.NavigationRequest=new NavigationRequest(NAVIGATION_REQUEST_EXIT_ALL,null,"");
+break;
+case (EXIT_ACTION_EXIT_CONFIRMATION):
+if(confirm(IntegrationImplementation.GetString("Would you like to exit the course now?"))){
+this.NavigationRequest=new NavigationRequest(NAVIGATION_REQUEST_EXIT_ALL,null,"");
+}else{
+this.NavigationRequest=new NavigationRequest(NAVIGATION_REQUEST_DISPLAY_MESSAGE,null,_83);
+}
+break;
+case (EXIT_ACTION_GO_TO_NEXT_SCO):
+this.NavigationRequest=new NavigationRequest(NAVIGATION_REQUEST_CONTINUE,null,"");
+break;
+case (EXIT_ACTION_DISPLAY_MESSAGE):
+this.NavigationRequest=new NavigationRequest(NAVIGATION_REQUEST_DISPLAY_MESSAGE,null,_83);
+break;
+case (EXIT_ACTION_DO_NOTHING):
+this.NavigationRequest=null;
+break;
+case (EXIT_ACTION_REFRESH_PAGE):
+Control.RefreshPage();
+break;
+}
+}
+if(this.NavigationRequest==null){
+this.LogSeqReturn("`1409`",_81);
+return;
+}
+switch(this.NavigationRequest.Type){
+case NAVIGATION_REQUEST_CONTINUE:
+this.DoContinue();
+break;
+case NAVIGATION_REQUEST_PREVIOUS:
+this.DoPrevious();
+break;
+case NAVIGATION_REQUEST_CHOICE:
+this.DoChoice(this.NavigationRequest.TargetActivity);
+break;
+case NAVIGATION_REQUEST_EXIT:
+break;
+case NAVIGATION_REQUEST_EXIT_ALL:
+Control.ExitScormPlayer("Sequencer");
+break;
+case NAVIGATION_REQUEST_SUSPEND_ALL:
+Control.ExitScormPlayer("Sequencer");
+break;
+case NAVIGATION_REQUEST_ABANDON:
+break;
+case NAVIGATION_REQUEST_ABANDON_ALL:
+Control.ExitScormPlayer("Sequencer");
+break;
+case NAVIGATION_REQUEST_DISPLAY_MESSAGE:
+break;
+case NAVIGATION_REQUEST_EXIT_PLAYER:
+Control.ExitScormPlayer("Sequencer");
+break;
+default:
+Debug.AssertError("Recieved an unrecognized navigation request - "+this.NavigationRequest);
+break;
+}
+this.LogSeqReturn("",_81);
+}
+catch(error){
+var _86="Error in OverallSequencingProcess for SCORM 1.1 / SCORM 1.2: ";
+if(typeof RegistrationToDeliver!="undefined"&&typeof RegistrationToDeliver.Id!="undefined"){
+_86=_86+"RegistrationId: "+RegistrationToDeliver.Id+", ";
+}
+Control.Comm.LogOnServer(_86,error);
+throw error;
+}
+}
+function Sequencer_SetSuspendedActivity(_87){
+this.SuspendedActivity=_87;
+}
+function Sequencer_GetSuspendedActivity(){
+return this.SuspendedActivity;
+}
+function Sequencer_Start(){
+var _88;
+if(this.SuspendedActivity!==null){
+_88=this.SuspendedActivity;
+}else{
+_88=this.GetFirstIncompleteActivity(this.Activities.SortedActivityList);
+}
+if(Control.Package.Properties.AlwaysFlowToFirstSco===true||Control.Package.Properties.ShowCourseStructure==false){
+this.DeliverThisActivity(_88);
+}else{
+var _89=IntegrationImplementation.GetString("Please make a selection to continue.");
+this.CurrentActivity=_88;
+this.NavigationRequest=new NavigationRequest(NAVIGATION_REQUEST_DISPLAY_MESSAGE,null,_89);
+}
+}
+function Sequencer_InitialRandomizationAndSelection(){
+}
+function Sequencer_GetCurrentActivity(){
+return this.CurrentActivity;
+}
+function Sequencer_GetExceptionText(){
+return this.ExceptionText;
+}
+function Sequencer_GetExitAction(_8a,_8b,_8c){
+var _8d=_8a.RunTime.Exit;
+if(_8d==SCORM_EXIT_UNKNOWN){
+_8d=SCORM_EXIT_NORMAL;
+}
+var _8e=this.IsActivityLastOverall(_8a,_8c);
+var _8f;
+if(_8b){
+_8f=((_8a.RunTime.CompletionStatus==SCORM_STATUS_COMPLETED)||(_8a.RunTime.SuccessStatus==SCORM_STATUS_PASSED));
+}else{
+_8f=(_8a.IsCompleted()==true||_8a.IsSatisfied()==true);
+}
+var _90=Control.Activities.GetRootActivity();
+var _91=(_90.IsCompleted()==true||_90.IsSatisfied()==true);
+var _92;
+if(_8e){
+if(_91===true){
+switch(_8d){
+case SCORM_EXIT_NORMAL:
+_8c.write("Using finalScoCourseSatisfiedNormalExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseSatisfiedNormalExitAction;
+break;
+case SCORM_EXIT_SUSPEND:
+_8c.write("Using finalScoCourseSatisfiedSuspendExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseSatisfiedSuspendExitAction;
+break;
+case SCORM_EXIT_TIME_OUT:
+_8c.write("Using finalScoCourseSatisfiedTimeoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseSatisfiedTimeoutExitAction;
+break;
+case SCORM_EXIT_LOGOUT:
+_8c.write("Using finalScoCourseSatisfiedLogoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseSatisfiedLogoutExitAction;
+break;
+}
+}else{
+switch(_8d){
+case SCORM_EXIT_NORMAL:
+_8c.write("Using finalScoCourseNotSatisfiedNormalExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseNotSatisfiedNormalExitAction;
+break;
+case SCORM_EXIT_SUSPEND:
+_8c.write("Using finalScoCourseNotSatisfiedSuspendExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseNotSatisfiedSuspendExitAction;
+break;
+case SCORM_EXIT_TIME_OUT:
+_8c.write("Using finalScoCourseNotSatisfiedTimeoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseNotSatisfiedTimeoutExitAction;
+break;
+case SCORM_EXIT_LOGOUT:
+_8c.write("Using finalScoCourseNotSatisfiedLogoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.FinalScoCourseNotSatisfiedLogoutExitAction;
+break;
+}
+}
+}else{
+if(_8f===true){
+switch(_8d){
+case SCORM_EXIT_NORMAL:
+_8c.write("Using intermediateScoSatisfiedNormalExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoSatisfiedNormalExitAction;
+break;
+case SCORM_EXIT_SUSPEND:
+_8c.write("Using intermediateScoSatisfiedSuspendExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoSatisfiedSuspendExitAction;
+break;
+case SCORM_EXIT_TIME_OUT:
+_8c.write("Using intermediateScoSatisfiedTimeoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoSatisfiedTimeoutExitAction;
+break;
+case SCORM_EXIT_LOGOUT:
+_8c.write("Using intermediateScoSatisfiedLogoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoSatisfiedLogoutExitAction;
+break;
+}
+}else{
+switch(_8d){
+case SCORM_EXIT_NORMAL:
+_8c.write("Using intermediateScoNotSatisfiedNormalExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoNotSatisfiedNormalExitAction;
+break;
+case SCORM_EXIT_SUSPEND:
+_8c.write("Using intermediateScoNotSatisfiedSuspendExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoNotSatisfiedSuspendExitAction;
+break;
+case SCORM_EXIT_TIME_OUT:
+_8c.write("Using intermediateScoNotSatisfiedTimeoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoNotSatisfiedTimeoutExitAction;
+break;
+case SCORM_EXIT_LOGOUT:
+_8c.write("Using intermediateScoNotSatisfiedLogoutExitAction parameter");
+_92=RegistrationToDeliver.Package.Properties.IntermediateScoNotSatisfiedLogoutExitAction;
+break;
+}
+}
+}
+return _92;
+}
+Sequencer.prototype.LogSeq=Sequencer_LogSeq;
+Sequencer.prototype.LogSeqAudit=Sequencer_LogSeqAudit;
+Sequencer.prototype.CanDeliverThisActivity=Sequencer_CanDeliverThisActivity;
+Sequencer.prototype.DeliverThisActivity=Sequencer_DeliverThisActivity;
+Sequencer.prototype.GetFirstIncompleteActivity=Sequencer_GetFirstIncompleteActivity;
+Sequencer.prototype.DoContinue=Sequencer_DoContinue;
+Sequencer.prototype.DoPrevious=Sequencer_DoPrevious;
+Sequencer.prototype.DoChoice=Sequencer_DoChoice;
+Sequencer.prototype.RollupData=Sequencer_RollupData;
+Sequencer.prototype.ActivityRollupProcess=Sequencer_ActivityRollupProcess;
+Sequencer.prototype.MarkAllActivitiesComplete=Sequencer_MarkAllActivitiesComplete;
+function Sequencer_CanDeliverThisActivity(_93,_94){
+if(!this.PrerequisitesEvaluator.Evaluate(_93,_94)){
+return false;
+}
+return true;
+}
+function Sequencer_DeliverThisActivity(_95){
+if(Control.Package.Properties.ScoLaunchType!==LAUNCH_TYPE_POPUP_AFTER_CLICK&&Control.Package.Properties.ScoLaunchType!==LAUNCH_TYPE_POPUP_AFTER_CLICK_WITHOUT_BROWSER_TOOLBAR){
+this.ContentDeliveryEnvironmentActivityDataSubProcess(_95);
+}
+this.CurrentActivity=_95;
+var i;
+var _97=this.Activities.SortedActivityList;
+for(i=0;i<_97.length;i++){
+_97[i].SetActive(false);
+}
+var _98=this.Activities.GetActivityPath(_95,true);
+for(i=0;i<_98.length;i++){
+_98[i].SetActive(true);
+}
+Control.DeliverActivity(_95);
+}
+function Sequencer_GetFirstIncompleteActivity(_99){
+var _9a=null;
+var _9b;
+var _9c;
+for(var i=0;i<_99.length;i++){
+if(_99[i].IsDeliverable()===true){
+if(_9a===null){
+_9a=_99[i];
+}
+_9b=_99[i].IsSatisfied();
+_9c=_99[i].IsCompleted();
+if(_9c==false||_9c==RESULT_UNKNOWN||(_9c==true&&_9b==false)){
+if(_99[i].RunTime!==null&&_99[i].RunTime.CompletionStatus!=SCORM_STATUS_BROWSED){
+return _99[i];
+}
+}
+}
+}
+if(_9a!==null){
+return _9a;
+}else{
+Debug.AssertError("No Deliverable Activities Found");
+}
+return true;
+}
+function Sequencer_DoContinue(){
+var _9e;
+var _9f;
+if(this.AtEndOfCourse===true){
+return;
+}
+var _a0;
+if(this.AtStartOfCourse===true){
+_a0=-1;
+}else{
+_a0=this.Activities.GetSortedIndexOfActivity(this.CurrentActivity);
+}
+var _a1=null;
+for(var i=(_a0+1);i<this.Activities.SortedActivityList.length;i++){
+if(this.Activities.SortedActivityList[i].IsDeliverable()===true){
+_a1=this.Activities.SortedActivityList[i];
+break;
+}
+}
+if(_a1!==null){
+if(!this.CanDeliverThisActivity(_a1)){
+this.ExceptionText=this.PrerequisitesEvaluator.GetMissingPrerequisitesHtml();
+return;
+}
+this.AtEndOfCourse=false;
+this.AtStartOfCourse=false;
+this.DeliverThisActivity(_a1);
+}else{
+this.AtEndOfCourse=true;
+this.ExceptionText=IntegrationImplementation.GetString("You have reached the end of the course.");
+}
+}
+function Sequencer_DoPrevious(){
+if(this.AtStartOfCourse===true){
+return;
+}
+var _a3;
+if(this.AtEndOfCourse===true){
+_a3=this.Activities.SortedActivityList.length;
+}else{
+_a3=this.Activities.GetSortedIndexOfActivity(this.CurrentActivity);
+}
+var _a4=null;
+for(var i=(_a3-1);i>=0;i--){
+if(this.Activities.SortedActivityList[i].IsDeliverable()===true){
+_a4=this.Activities.SortedActivityList[i];
+break;
+}
+}
+if(_a4!==null){
+if(!this.CanDeliverThisActivity(_a4)){
+this.ExceptionText=this.PrerequisitesEvaluator.GetMissingPrerequisitesHtml();
+return;
+}
+this.AtEndOfCourse=false;
+this.AtStartOfCourse=false;
+this.DeliverThisActivity(_a4);
+}else{
+this.AtStartOfCourse=true;
+this.ExceptionText=IntegrationImplementation.GetString("You have reached the beginning of the course.");
+}
+}
+function Sequencer_DoChoice(_a6){
+var _a7=null;
+_a7=this.Activities.GetActivityFromIdentifier(_a6);
+if(_a7!==null){
+if(_a7.IsDeliverable()===true){
+if(!this.CanDeliverThisActivity(_a7)){
+this.ExceptionText=this.PrerequisitesEvaluator.GetMissingPrerequisitesHtml();
+return;
+}
+this.AtEndOfCourse=false;
+this.AtStartOfCourse=false;
+this.DeliverThisActivity(_a7);
+}else{
+Debug.AssertError("Chosen activity is not deliverable.");
+}
+}else{
+}
+}
+function Sequencer_RollupData(_a8,_a9){
+var _aa=this.Activities.GetActivityPath(_a8);
+for(var i=0;i<_aa.length;i++){
+this.ActivityRollupProcess(_aa[i],_a9);
+}
+}
+function Sequencer_ActivityRollupProcess(_ac,_ad){
+var _ae=_ac.GetChildren();
+var _af;
+var _b0=false;
+var _b1=true;
+var _b2=true;
+var _b3=true;
+var _b4=true;
+var _b5=true;
+var _b6;
+var _b7;
+var _b8;
+var _b9;
+var _ba;
+var _bb;
+var _bc=0;
+var _bd=0;
+var _be=null;
+var _bf;
+var _c0=0;
+var _c1;
+var _c2;
+var _c3;
+var _c4;
+var _c5;
+var _c6;
+var _c7;
+var _c8;
+var i;
+var _ca=_ac.GetPrimaryObjective();
+if(!this.LookAhead&&_ac.IsTheRoot()){
+_c1=_ca.GetProgressStatus(_ac,false);
+_c2=_ca.GetSatisfiedStatus(_ac,false);
+_c3=_ac.GetAttemptProgressStatus();
+_c4=_ac.GetAttemptCompletionStatus();
+}
+_ca.SetProgressStatus(false,false,_ac);
+_ca.SetSatisfiedStatus(false,false,_ac);
+_ca.SetMeasureStatus(false,_ac);
+_ac.SetAttemptProgressStatus(false);
+_ac.SetAttemptCompletionStatus(false);
+if(PREREQUISITE_SKIP_BLOCKED){
+this.LogSeq("`1307`",_ad);
+_af=[];
+for(i=0;i<_ae.length;i++){
+if(this.CanDeliverThisActivity(_ae[i],this.LookAhead)){
+_af.push(_ae[i]);
+}else{
+this.LogSeq("`1457`"+_ae[i].ItemIdentifier,_ad);
+}
+}
+}else{
+_af=_ae;
+}
+var _cb;
+for(i=0;i<_af.length;i++){
+_b6=(_af[i].IsAttempted()===true);
+_b7=_af[i].IsSatisfied();
+_b8=(_b7===false&&_b6===true);
+_b9=_af[i].IsCompleted();
+_ba=(_b9===false||_b6===true);
+_bb=(_b9===true&&(_b8!==true));
+_b0=(_b0===true||_b6===true);
+_b2=(_b2===true&&(_b7===true));
+_b1=(_b1===true&&_b8===true);
+_b4=(_b4===true&&(_b9===true));
+_b3=(_b3===true&&_ba===true);
+_b5=(_b5===true&&(_bb===true));
+_cb=_af[i].GetPrimaryObjective();
+if(_cb.GetMeasureStatus(_af[i],false)===true){
+var _cc=_cb.GetNormalizedMeasure(_af[i],false);
+_c0=_cc;
+_bc++;
+if(_cc>0){
+_bd++;
+}
+if(_be===null&&Control.Package.Properties.ScoreRollupMode!=SCORE_ROLLUP_METHOD_AVERAGE_SCORE_OF_ALL_UNITS_WITH_NONZERO_SCORES){
+_be=0;
+}
+if(_cc>0){
+_be=_be+_cc;
+}
+}else{
+_c0=0;
+}
+}
+if(!_ac.IsALeaf()){
+_ac.RollupDurations();
+}
+if(_be!==null){
+switch(Control.Package.Properties.ScoreRollupMode){
+case (SCORE_ROLLUP_METHOD_SCORE_PROVIDED_BY_COURSE):
+_bf=_be;
+break;
+case (SCORE_ROLLUP_METHOD_AVERAGE_SCORE_OF_ALL_UNITS):
+_bf=(_be/_af.length);
+break;
+case (SCORE_ROLLUP_METHOD_AVERAGE_SCORE_OF_ALL_UNITS_WITH_SCORES):
+_bf=(_be/_bc);
+break;
+case (SCORE_ROLLUP_METHOD_AVERAGE_SCORE_OF_ALL_UNITS_WITH_NONZERO_SCORES):
+_bf=(_be/_bd);
+break;
+case (SCORE_ROLLUP_METHOD_FIXED_AVERAGE):
+if(_ac.IsTheRoot()){
+_be=0;
+for(i=0;i<Control.Activities.ActivityList.length;i++){
+var rt=Control.Activities.ActivityList[i].RunTime;
+if(rt!==null&&rt!==undefined&&rt.ScoreScaled!==null){
+_be+=rt.ScoreScaled;
+}
+}
+}
+_bf=(_be/Control.Package.Properties.NumberOfScoringObjects);
+break;
+case (SCORE_ROLLUP_METHOD_LAST_SCO_SCORE):
+_bf=_c0;
+break;
+default:
+Debug.AssertError("Invalid Score Rollup Mode Detected-"+Control.Package.Properties.ScoreRollupMode);
+break;
+}
+_bf=RoundToPrecision(_bf,7);
+_ca.SetMeasureStatus(true,_ac);
+_ca.SetNormalizedMeasure(_bf,_ac);
+}
+if(_b0){
+_ac.SetAttemptProgressStatus(true);
+_ac.SetActivityProgressStatus(true);
+}
+if(_b3===true||_b0){
+_ac.SetAttemptProgressStatus(true);
+_ac.SetAttemptCompletionStatus(false);
+}
+var _ce=(Control.Package.Properties.ApplyRollupStatusToSuccess===true);
+switch(Control.Package.Properties.StatusRollupMode){
+case (STATUS_ROLLUP_METHOD_STATUS_PROVIDED_BY_COURSE):
+if(_b4===true){
+_ac.SetAttemptProgressStatus(true);
+_ac.SetAttemptCompletionStatus(true);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+break;
+case (STATUS_ROLLUP_METHOD_COMPLETE_WHEN_ALL_UNITS_COMPLETE):
+if(_b4===true||_b2===true||_b1===true){
+_ac.SetAttemptProgressStatus(true);
+if(_b1===true&&Control.Package.Properties.CompletionStatOfFailedSuccessStat!==SCORM_STATUS_UNKNOWN){
+_ac.SetAttemptCompletionStatus(_b4);
+if(_ce){
+if(_b4){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}else{
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(false,false,_ac);
+}
+}
+}else{
+_ac.SetAttemptCompletionStatus(true);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+}
+break;
+case (STATUS_ROLLUP_METHOD_COMPLETE_WHEN_ALL_UNITS_COMPLETE_AND_NOT_FAILED):
+if(_b5===true){
+_ac.SetAttemptProgressStatus(true);
+_ac.SetAttemptCompletionStatus(true);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+break;
+case (STATUS_ROLLUP_METHOD_COMPLETE_WHEN_THRESHOLD_SCORE_IS_MET):
+if(_bf>=Control.Package.Properties.ThresholdScore){
+_ac.SetAttemptProgressStatus(true);
+_ac.SetAttemptCompletionStatus(true);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+break;
+case (STATUS_ROLLUP_METHOD_COMPLETE_WHEN_ALL_UNITS_COMPLETE_AND_THRESHOLD_SCORE_IS_MET):
+if((_b4===true||_b2===true||_b1===true)&&(_bf>=Control.Package.Properties.ThresholdScore)){
+_ac.SetAttemptProgressStatus(true);
+if(_b1===true&&Control.Package.Properties.CompletionStatOfFailedSuccessStat!==SCORM_STATUS_UNKNOWN){
+_ac.SetAttemptCompletionStatus(_b4);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(false,false,_ac);
+}
+}else{
+_ac.SetAttemptCompletionStatus(true);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+}
+break;
+case (STATUS_ROLLUP_METHOD_COMPLETE_WHEN_ALL_UNITS_ARE_PASSED):
+if(_b2===true){
+_ac.SetAttemptProgressStatus(true);
+_ac.SetAttemptCompletionStatus(true);
+if(_ce){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+break;
+default:
+Debug.AssertError("Invalid Status Rollup Mode Detected-"+Control.Package.Properties.StatusRollupMode);
+break;
+}
+if(!_ce){
+if(_b1===true){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(false,false,_ac);
+}
+if(_b2===true){
+_ca.SetProgressStatus(true,false,_ac);
+_ca.SetSatisfiedStatus(true,false,_ac);
+}
+}
+if(!this.LookAhead&&_ac.IsTheRoot()){
+_c5=_ca.GetProgressStatus(_ac,false);
+_c6=_ca.GetSatisfiedStatus(_ac,false);
+_c7=_ac.GetAttemptProgressStatus();
+_c8=_ac.GetAttemptCompletionStatus();
+if(_c7!=_c3||_c8!=_c4){
+var _cf=(_c7?(_c8?SCORM_STATUS_COMPLETED:SCORM_STATUS_INCOMPLETE):SCORM_STATUS_NOT_ATTEMPTED);
+this.WriteHistoryLog("",{ev:"Rollup Completion",v:_cf,ai:_ac.ItemIdentifier});
+}
+if(_c5!=_c1||_c6!=_c2){
+var _d0=(_c5?(_c6?SCORM_STATUS_PASSED:SCORM_STATUS_FAILED):SCORM_STATUS_UNKNOWN);
+this.WriteHistoryLog("",{ev:"Rollup Satisfaction",v:_d0,ai:_ac.ItemIdentifier});
+}
+}
+}
+function Sequencer_IsActivityLastOverall(_d1){
+var i;
+var _d3;
+for(i=this.Activities.SortedActivityList.length-1;i>=0;i--){
+if(this.Activities.SortedActivityList[i]==_d1){
+return true;
+}else{
+_d3=PREREQUISITE_SKIP_BLOCKED&&!this.CanDeliverThisActivity(this.Activities.SortedActivityList[i]);
+if(_d3){
+continue;
+}else{
+return false;
+}
+}
+}
+return false;
+}
+function Sequencer_IsActivityFirstOverall(_d4){
+var _d5;
+var _d6=this.Activities.SortedActivityList;
+for(var i=0;i<_d6.length;i++){
+if(_d6[i].IsDeliverable()===true){
+if(_d4==_d6[i]){
+_d5=true;
+}else{
+_d5=false;
+}
+}
+}
+return _d5;
+}
+function Sequencer_EvaluatePossibleNavigationRequests(_d8){
+var _d9=Control.Package.Properties;
+this.CurrentActivity.TransferRteDataToActivity();
+this.RollupData(this.CurrentActivity);
+var _da=false;
+var _db=false;
+var _dc=this.CurrentActivity.GetPreviousActivityPreorder();
+if(_dc!=null){
+_db=this.PrerequisitesEvaluator.Evaluate(_dc,PREREQ_USE_LOOKAHEAD);
+}
+var _dd=this.CurrentActivity.GetNextActivityPreorder();
+if(_dd!=null){
+_da=this.PrerequisitesEvaluator.Evaluate(_dd,PREREQ_USE_LOOKAHEAD);
+}
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_START].WillSucceed=true;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_RESUME_ALL].WillSucceed=true;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_CONTINUE].WillSucceed=(this.AtEndOfCourse===false&&_d9.EnableFlowNav===true)&&_da;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_PREVIOUS].WillSucceed=(this.AtStartOfCourse===false&&_d9.EnableFlowNav===true)&&_db;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_EXIT].WillSucceed=true;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_EXIT_ALL].WillSucceed=true;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_SUSPEND_ALL].WillSucceed=true;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_ABANDON].WillSucceed=true;
+_d8[POSSIBLE_NAVIGATION_REQUEST_INDEX_ABANDON_ALL].WillSucceed=true;
+var _de;
+var _df;
+for(var i=POSSIBLE_NAVIGATION_REQUEST_INDEX_CHOICE;i<_d8.length;i++){
+_de=this.Activities.GetActivityFromIdentifier(_d8[i].TargetActivityItemIdentifier);
+_df=this.PrerequisitesEvaluator.Evaluate(_de,PREREQ_USE_LOOKAHEAD);
+_d8[i].WillSucceed=(_de.IsDeliverable()&&_d9.EnableChoiceNav===true)&&_df;
+}
+return _d8;
+}
+function Sequencer_InitializePossibleNavigationRequestAbsolutes(_e1,_e2,_e3){
+}
+function Sequencer_MarkAllActivitiesComplete(){
+var _e4=this.Activities.SortedActivityList;
+var _e5;
+for(var i=0;i<_e4.length;i++){
+_e5=_e4[i].GetPrimaryObjective();
+_e4[i].SetAttemptProgressStatus(true);
+_e4[i].SetAttemptCompletionStatus(true);
+_e5.SetProgressStatus(true,false,_e4[i]);
+_e5.SetSatisfiedStatus(true,false,_e4[i]);
+}
+}
+function Sequencer_LogSeq(str,_e8){
+str=str+"";
+if(this.LookAhead===true){
+return Debug.WriteLookAheadDetailed(str,_e8);
+}else{
+return Debug.WriteSequencingDetailed(str,_e8);
+}
+}
+function Sequencer_LogSeqAudit(str,_ea){
+str=str+"";
+if(this.LookAhead===true){
+return Debug.WriteLookAheadAudit(str,_ea);
+}else{
+return Debug.WriteSequencingAudit(str,_ea);
+}
+}
+function Sequencer_LogSeqReturn(str,_ec){
+if(_ec===null||_ec===undefined){
+Debug.AssertError("`1564`");
+}
+str=str+"";
+if(this.LookAhead===true){
+return _ec.setReturn(str);
+}else{
+return _ec.setReturn(str);
+}
+}
+function Sequencer_WriteHistoryLog(str,_ee){
+HistoryLog.WriteEventDetailed(str,_ee);
+}
+function Sequencer_WriteHistoryReturnValue(str,_f0){
+HistoryLog.WriteEventDetailedReturnValue(str,_f0);
+}
+function Sequencer_ContentDeliveryEnvironmentActivityDataSubProcess(_f1){
+var _f2=ConvertDateToIso8601String(new Date());
+var _f3;
+if(_f1.IsSuspended()===false){
+_f1.IncrementAttemptCount();
+_f1.SetActivityProgressStatus(true);
+_f3={ev:"AttemptStart",an:_f1.GetAttemptCount(),ai:_f1.ItemIdentifier,at:_f1.LearningObject.Title};
+this.WriteHistoryLog("",_f3);
+_f1.SetAttemptStartTimestampUtc(_f2);
+_f1.SetAttemptAbsoluteDuration("PT0H0M0S");
+_f1.SetAttemptExperiencedDurationTracked("PT0H0M0S");
+_f1.SetAttemptExperiencedDurationReported("PT0H0M0S");
+}
+this.SuspendedActivity=null;
+var _f4=this.Activities.GetActivityPath(_f1,true);
+for(var i=0;i<_f4.length;i++){
+if(_f4[i].GetAttemptCount()==0){
+_f4[i].SetActivityProgressStatus(true);
+_f4[i].IncrementAttemptCount();
+_f3={ev:"AttemptStart",an:_f4[i].GetAttemptCount(),ai:_f4[i].ItemIdentifier,at:_f4[i].LearningObject.Title};
+this.WriteHistoryLog("",_f3);
+_f4[i].SetAttemptStartTimestampUtc(_f2);
+_f4[i].SetAttemptAbsoluteDuration("PT0H0M0S");
+_f4[i].SetAttemptExperiencedDurationTracked("PT0H0M0S");
+_f4[i].SetAttemptExperiencedDurationReported("PT0H0M0S");
+}
+}
+}
+function PrerequisitesEvaluator(_f6){
+this.Sequencer=_f6;
+this.activityMap={};
+this.cachedActivityStatus={};
+this.currentLookAhead=false;
+this.currentLog=null;
+this.missingPrerequisites=[];
+var _f7={};
+var _f8={};
+function walkActivityTree(_f9){
+_f7[_f9.ItemIdentifier]=_f9;
+_f8[_f9.ItemIdentifier]=null;
+var _fa=_f9.GetChildren();
+for(var i=0;i<_fa.length;i++){
+walkActivityTree(_fa[i]);
+}
+}
+walkActivityTree(_f6.Activities.ActivityTree);
+this.activityMap=_f7;
+this.cachedActivityStatus=_f8;
+}
+var PREREQ_USE_LOOKAHEAD=true;
+PrerequisitesEvaluator.prototype.IsLeftAssociative=PrerequisitesEvaluator_IsLeftAssociative;
+PrerequisitesEvaluator.prototype.OperatorPrecedence=PrerequisitesEvaluator_OperatorPrecedence;
+PrerequisitesEvaluator.prototype.ArgCount=PrerequisitesEvaluator_ArgCount;
+PrerequisitesEvaluator.prototype.IsOperator=PrerequisitesEvaluator_IsOperator;
+PrerequisitesEvaluator.prototype.IsBoolean=PrerequisitesEvaluator_IsBoolean;
+PrerequisitesEvaluator.prototype.IsIdentifier=PrerequisitesEvaluator_IsIdentifier;
+PrerequisitesEvaluator.prototype.IsSet=PrerequisitesEvaluator_IsSet;
+PrerequisitesEvaluator.prototype.EvaluateOperand=PrerequisitesEvaluator_EvaluateOperand;
+PrerequisitesEvaluator.prototype.EvaluateOperation=PrerequisitesEvaluator_EvaluateOperation;
+PrerequisitesEvaluator.prototype.TokenizeExpression=PrerequisitesEvaluator_TokenizeExpression;
+PrerequisitesEvaluator.prototype.DistributeNotOperator=PrerequisitesEvaluator_DistributeNotOperator;
+PrerequisitesEvaluator.prototype.ToPostfix=PrerequisitesEvaluator_ToPostfix;
+PrerequisitesEvaluator.prototype.Compute=PrerequisitesEvaluator_Compute;
+PrerequisitesEvaluator.prototype.ClearActivityStatusCache=PrerequisitesEvaluator_ClearActivityStatusCache;
+PrerequisitesEvaluator.prototype.Evaluate=PrerequisitesEvaluator_Evaluate;
+PrerequisitesEvaluator.prototype.CheckActivityStatus=PrerequisitesEvaluator_CheckActivityStatus;
+PrerequisitesEvaluator.prototype.ComputeActivityStatus=PrerequisitesEvaluator_ComputeActivityStatus;
+PrerequisitesEvaluator.prototype.GetMissingPrerequisitesHtml=PrerequisitesEvaluator_GetMissingPrerequisitesHtml;
+function PrerequisitesEvaluator_IsLeftAssociative(c){
+switch(c){
+case "&":
+case "|":
+case "*":
+case "=":
+case "<>":
+return true;
+case "~":
+return false;
+}
+return false;
+}
+function PrerequisitesEvaluator_OperatorPrecedence(c){
+switch(c){
+case "~":
+return 4;
+case "*":
+return 3;
+case "=":
+case "<>":
+return 2;
+case "&":
+case "|":
+return 1;
+}
+return 0;
+}
+function PrerequisitesEvaluator_ArgCount(c){
+switch(c){
+case "&":
+case "|":
+case "*":
+case "=":
+return 2;
+case "~":
+return 1;
+}
+return 0;
+}
+function PrerequisitesEvaluator_IsOperator(c){
+switch(c){
+case "&":
+case "|":
+case "~":
+case "=":
+case "*":
+return true;
+}
+return false;
+}
+function PrerequisitesEvaluator_IsBoolean(val){
+return val===true||val===false;
+}
+function PrerequisitesEvaluator_IsIdentifier(val){
+if(typeof val=="string"){
+return val.match(new RegExp("[-.:_A-Za-z0-9]+"));
+}else{
+return false;
+}
+}
+function PrerequisitesEvaluator_IsSet(c){
+return c=="{";
+}
+function PrerequisitesEvaluator_EvaluateOperand(_103,_104){
+if(this.IsBoolean(_103)){
+return _103;
+}else{
+if(this.IsIdentifier(_103)){
+if(this.cachedActivityStatus[_103]===undefined){
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Operand \"`1708`\" of operator "+_104+" is neither a boolean value, nor a known activity identifier",this.currentLog);
+}
+return this.CheckActivityStatus(_103,null);
+}else{
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Operand \"`1708`\" of operator "+_104+" is neither a boolean value, nor a known activity identifier",this.currentLog);
+}
+}
+return false;
+}
+function PrerequisitesEvaluator_EvaluateOperation(left,_106,_107){
+var op1=null;
+var op2=null;
+var _10a;
+var _10b;
+var _10c;
+switch(_107){
+case "&":
+op1=this.EvaluateOperand(left,"&");
+op2=this.EvaluateOperand(_106,"&");
+if(!(op1&&op2)){
+if(!op1&&this.IsIdentifier(left)&&!this.IsBoolean(left)){
+this.missingPrerequisites.push("Activity \""+this.activityMap[left].GetTitle()+"\" must be completed or passed.");
+}
+if(!op2&&this.IsIdentifier(_106)&&!this.IsBoolean(_106)){
+this.missingPrerequisites.push("Activity \""+this.activityMap[_106].GetTitle()+"\" must be completed or passed.");
+}
+}
+return op1&&op2;
+case "|":
+op1=this.EvaluateOperand(left,"|");
+op2=this.EvaluateOperand(_106,"|");
+if(!(op1||op2)){
+if((this.IsIdentifier(left)&&!this.IsBoolean(left))&&(this.IsIdentifier(_106)&&!this.IsBoolean(_106))){
+this.missingPrerequisites.push("Either activity \""+this.activityMap[left].GetTitle()+"\" or activity \""+this.activityMap[_106].GetTitle()+"\" must be completed or passed.");
+return false;
+}
+if(this.IsIdentifier(left)&&!this.IsBoolean(left)){
+this.missingPrerequisites.push("Activity \""+this.activityMap[left].GetTitle()+"\" may also be required to be completed or passed.");
+}
+if(this.IsIdentifier(_106)&&!this.IsBoolean(_106)){
+this.missingPrerequisites.push("Activity \""+this.activityMap[_106].GetTitle()+"\" may also be required to be completed or passed.");
+}
+}
+return op1||op2;
+case "*":
+return left>=_106;
+case "=":
+_10a=null;
+_10b=null;
+if(this.cachedActivityStatus[left]!==undefined){
+_10a=left;
+_10b=_106;
+}else{
+if(this.cachedActivityStatus[_106]!==undefined){
+_10a=_106;
+_10b=left;
+}else{
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Neither operand of equals operator in prerequisites expression is a known activity identifier.",this.currentLog);
+}
+}
+_10c=this.CheckActivityStatus(_10a,_10b);
+if(!_10c){
+this.missingPrerequisites.push("Activity \""+this.activityMap[_10a].GetTitle()+"\" must be "+_10b+".");
+}
+return _10c;
+case "<>":
+_10a=null;
+_10b=null;
+if(this.cachedActivityStatus[left]!==undefined){
+_10a=left;
+_10b=_106;
+}else{
+if(this.cachedActivityStatus[_106]!==undefined){
+_10a=_106;
+_10b=left;
+}else{
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Neither operand of equals operator in prerequisites expression is a known activity identifier.",this.currentLog);
+}
+}
+_10c=this.CheckActivityStatus(_10a,_10b);
+if(_10c){
+this.missingPrerequisites.push("Activity \""+this.activityMap[_10a].GetTitle()+"\" must not be "+_10b+".");
+}
+return !_10c;
+case "~":
+op1=this.EvaluateOperand(left,"~");
+return !op1;
+}
+return false;
+}
+function PrerequisitesEvaluator_TokenizeExpression(_10d){
+var _10e=[];
+var _10f="";
+var _110=false;
+for(var i=0;i<_10d.length;i++){
+var c=_10d.charAt(i);
+if(c=="\""){
+_110=!_110;
+}
+if(_110&&c!="\""){
+_10f+=c;
+continue;
+}
+if(!this.IsIdentifier(c)&&_10f!=""){
+_10e.push(_10f);
+_10f="";
+}
+if(this.IsIdentifier(c)){
+_10f+=c;
+}else{
+if(this.IsOperator(c)||c=="("||c==")"||c=="{"||c=="}"||c==","){
+_10e.push(c);
+}else{
+if(c=="<"){
+if(_10d.charAt(i+1)==">"){
+_10e.push("<>");
+i++;
+}else{
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Mismatched \"<\" character.",this.currentLog);
+}
+}
+}
+}
+}
+if(_10f!=""){
+_10e.push(_10f);
+}
+return _10e;
+}
+function PrerequisitesEvaluator_DistributeNotOperator(_113,_114,prev){
+var t=_113.pop();
+if(t=="&"){
+_114.push("|");
+this.DistributeNotOperator(_113,_114,t);
+this.DistributeNotOperator(_113,_114,t);
+}else{
+if(t=="|"){
+_114.push("&");
+this.DistributeNotOperator(_113,_114,t);
+this.DistributeNotOperator(_113,_114,t);
+}else{
+if(t=="="){
+_114.push("<>");
+this.DistributeNotOperator(_113,_114,t);
+this.DistributeNotOperator(_113,_114,t);
+}else{
+if(t=="<>"){
+_114.push("=");
+this.DistributeNotOperator(_113,_114,t);
+this.DistributeNotOperator(_113,_114,t);
+}else{
+if(t=="~"){
+var tmp=[];
+this.DistributeNotOperator(_113,tmp,t);
+while(tmp.length>0){
+_113.push(tmp.pop());
+}
+this.DistributeNotOperator(_113,_114,t);
+}else{
+if(prev!="~"&&prev!="="&&prev!="<>"){
+_114.push("~");
+}
+_114.push(t);
+}
+}
+}
+}
+}
+}
+function PrerequisitesEvaluator_ToPostfix(_118){
+var _119=[];
+var _11a=[];
+var _11b=[];
+var c;
+var cur;
+for(var i=0;i<_118.length;i++){
+cur=_118[i];
+if(this.IsIdentifier(cur)){
+_119.push(cur);
+}else{
+if(this.IsSet(cur)){
+_11a.push(cur);
+_11b.push(1);
+}else{
+if(cur==","){
+var _11f=false;
+while(_11a.length>0){
+c=_11a[_11a.length-1];
+if(c=="{"){
+_11f=true;
+break;
+}else{
+_119.push(_11a.pop());
+}
+}
+if(!_11f){
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Separator or set symbol mismatched.",this.currentLog);
+}
+_11b[_11b.length-1]++;
+}else{
+if(this.IsOperator(cur)){
+while(_11a.length>0){
+var prev=_11a[_11a.length-1];
+if(this.IsOperator(prev)&&((this.IsLeftAssociative(cur)&&(this.OperatorPrecedence(cur)<=this.OperatorPrecedence(prev)))||(!this.IsLeftAssociative(cur)&&(this.OperatorPrecedence(cur)<this.OperatorPrecedence(prev))))){
+_119.push(_11a.pop());
+}else{
+break;
+}
+}
+_11a.push(cur);
+}else{
+if(cur=="("){
+_11a.push(cur);
+}else{
+if(cur==")"){
+while(_11a[_11a.length-1]!="("){
+if(_11a.length==0){
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Mismatched parentheses in expression.",this.currentLog);
+}
+_119.push(_11a.pop());
+}
+_11a.pop();
+}else{
+if(cur=="}"){
+_119.push(_11b.pop());
+}
+}
+}
+}
+}
+}
+}
+}
+if(identifier!=""){
+_119.push(identifier);
+}
+while(_11a.length>0){
+c=_11a.pop();
+if(c=="("||c==")"){
+this.Sequencer.LogSeq("Error evaluating prerequisites, invalid syntax - Mismatched parentheses in expression.",this.currentLog);
+}
+_119.push(c);
+}
+return _119;
+}
+function PrerequisitesEvaluator_Compute(_121){
+var _122=[];
+for(var i=0;i<_121.length;i++){
+var c=_121[i];
+if(this.IsIdentifier(c)){
+_122.push(c);
+}else{
+if(this.IsOperator(c)){
+var args=this.ArgCount(c);
+var _126="";
+if(args==1){
+_126=this.EvaluateOperation(_122.pop(),null,c);
+}else{
+_126=this.EvaluateOperation(_122.pop(),_122.pop(),c);
+}
+_122.push(_126);
+}else{
+if(this.IsSet(c)){
+var _127=_122.pop();
+var _128=0;
+for(var j=0;j<_127;j++){
+var _12a=_122.pop();
+if(this.EvaluateOperand(_12a)){
+_128++;
+}
+}
+_122.push(_128);
+}
+}
+}
+}
+var cur=_122.pop();
+if(this.IsIdentifier(cur)){
+if(this.EvaluateOperand(cur)){
+return true;
+}else{
+if(this.activityMap[cur]===undefined){
+this.Sequencer.LogSeq("Error evaluating prerequisites - Unknown activity "+cur,this.currentLog);
+}else{
+this.missingPrerequisites.push("Activity \""+this.activityMap[cur].LearningObject.Title+"\" must be completed or passed.");
+}
+return false;
+}
+}
+return cur;
+}
+function PrerequisitesEvaluator_ClearActivityStatusCache(){
+this.cachedActivityStatus={};
+for(var id in this.activityMap){
+this.cachedActivityStatus[id]=null;
+}
+}
+function PrerequisitesEvaluator_Evaluate(_12d,_12e){
+this.currentLog=this.Sequencer.LogSeqAudit("Beginning prerequisites evaluation of activity "+_12d.ItemIdentifier);
+this.missingPrerequisites=[];
+this.currentLookAhead=_12e;
+if(_12e===undefined||_12e===null){
+this.currentLookAhead=false;
+}
+var _12f=_12d.LearningObject;
+if(_12f==null){
+this.Sequencer.LogSeq("Error evaluating prerequisites - The activity is missing an associated Learning Object.",this.currentLog);
+return false;
+}
+if(_12f.Prerequisites===""){
+this.Sequencer.LogSeq("No prerequisites defined for activity.",this.currentLog);
+return true;
+}
+this.ClearActivityStatusCache();
+var _130=_12f.Prerequisites;
+var _131=this.TokenizeExpression(_130);
+var _132=this.ToPostfix(_131);
+var _133=[];
+while(_132.length>0){
+var c=_132.pop();
+if(c=="~"){
+this.DistributeNotOperator(_132,_133);
+}else{
+_133.push(c);
+}
+}
+_133.reverse();
+var _135=this.Compute(_133);
+if(this.missingPrerequisites.length>0){
+for(var i=0;i<this.missingPrerequisites.length;i++){
+this.Sequencer.LogSeq(this.missingPrerequisites[i],this.currentLog);
+}
+}
+return _135;
+}
+function PrerequisitesEvaluator_CheckActivityStatus(_137,_138){
+if(this.cachedActivityStatus[_137]===undefined){
+this.Sequencer.LogSeq("Error evaluating prerequisites - Unknown activity "+_137,this.currentLog);
+return false;
+}
+var _139=null;
+if(this.cachedActivityStatus[_137]==null){
+_139=this.ComputeActivityStatus(this.activityMap[_137]);
+this.cachedActivityStatus[_137]=_139;
+}else{
+_139=this.cachedActivityStatus[_137];
+}
+var _13a=false;
+if(_138==null){
+_13a=_139=="passed"||_139=="completed";
+if(!_13a){
+this.Sequencer.LogSeq("Expected activity "+_137+" to be passed or completed (was: "+_139+").",this.currentLog);
+}
+}else{
+_13a=_139==_138;
+if(!_13a){
+this.Sequencer.LogSeq("Expected activity "+_137+" to be "+_138+" (was: "+_139+").",this.currentLog);
+}
+}
+return _13a;
+}
+function PrerequisitesEvaluator_ComputeActivityStatus(_13b){
+if(_13b.IsDeliverable()){
+if(this.currentLookAhead){
+return TranslateDualStausToSingleStatus(_13b.RunTime.LookAheadCompletionStatus,_13b.RunTime.LookAheadSuccessStatus);
+}else{
+return TranslateDualStausToSingleStatus(_13b.RunTime.CompletionStatus,_13b.RunTime.SuccessStatus);
+}
+}else{
+if(_13b.IsSatisfied()===true){
+return "passed";
+}
+if(_13b.IsCompleted()===true){
+return "completed";
+}
+if(_13b.IsCompleted()==RESULT_UNKNOWN&&_13b.IsSatisfied()==RESULT_UNKNOWN){
+return "not attempted";
+}
+if(_13b.IsSatisfied()===false){
+return "failed";
+}
+if(_13b.IsCompleted()===false){
+return "incomplete";
+}
+if(_13b.GetAttemptCount()>0){
+return "browsed";
+}
+}
+return false;
+}
+function PrerequisitesEvaluator_GetMissingPrerequisitesHtml(){
+var text=IntegrationImplementation.GetString("You have not completed the prerequisites for this activity. Additional Information:<ul>");
+for(var i=0;i<this.missingPrerequisites.length;i++){
+text+="<li>"+this.missingPrerequisites[i]+"</li>";
+}
+text+="</ul>";
+return text;
+}
+

@@ -1,0 +1,337 @@
+Log.ClientLoggingIsFunctional=true;
+function Log(_1,_2,_3){
+this.dom=null;
+this.root=null;
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+this.isXmlBased=true;
+this.includeTimestamps=_2;
+try{
+this.dom=Sarissa.getDomDocument();
+this.dom.async=false;
+this.dom.validateOnParse=false;
+this.dom.resolveExternals=false;
+try{
+this.dom.setProperty("SelectionLanguage","XPath");
+this.dom.setProperty("SelectionNamespaces","xmlns:xhtml='http://www.w3.org/1999/xhtml'");
+}
+catch(ex){
+}
+var _4=this.dom.createProcessingInstruction("xml","version='1.0'");
+this.dom.appendChild(_4);
+_4=null;
+_4=this.dom.createComment("SCORM Engine Log");
+this.dom.appendChild(_4);
+_4=null;
+if(_3==undefined){
+this.root=this.dom.createElement("scp-log");
+}else{
+this.root=this.dom.createElement(_3);
+}
+this.root.setAttribute("version",_1);
+this.root.setAttribute("browser",navigator.userAgent);
+this.dom.appendChild(this.root);
+}
+catch(e){
+Log.ClientLoggingIsFunctional=false;
+XMLHttpRequest=PRE_SARISSA_XMLHTTPREQUEST;
+}
+}
+Log.prototype.startNew=function(_5,_6,_7){
+if(Log.ClientLoggingIsFunctional!==true){
+return new LogEntry(null,this,"");
+}
+var _8;
+var _9;
+var _a=this.dom.createElement(_5);
+if(typeof _6=="string"){
+_9=_6;
+_8=new LogEntry(_a,this,_9);
+this.root.appendChild(_a);
+}else{
+if(_6!==null&&_6!==undefined){
+_9=_6.callee.toString().substring(9,_6.callee.toString().indexOf("{")-1);
+_8=new LogEntry(_a,this,_9,_6);
+this.root.appendChild(_a);
+}else{
+_8=new LogEntry(_a,this,"unknown entry point");
+this.root.appendChild(_a);
+}
+}
+return _8;
+};
+Log.prototype.startNewAtRoot=function(_b,_c){
+return this.startNew(this.root,_b,_c);
+};
+Log.prototype.write=function(_d,_e){
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+var _f=this.dom.createElement("i");
+var _10=this.dom.createTextNode(_e);
+_f.appendChild(_10);
+_d.appendChild(_f);
+};
+Log.prototype.display=function(_11){
+this.displayRefresh(null,false,_11);
+};
+Log.prototype.displayFilter=function(_12,_13){
+if(_12){
+_12.close();
+}
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+var _14=Sarissa.getDomDocument();
+_14.async=false;
+_14.validateOnParse=false;
+_14.resolveExternals=false;
+var _15=_14.createElement("scp-log");
+_15.setAttribute("version",this.root.getAttribute("version"));
+_14.appendChild(_15);
+var _16=new Object();
+var _17="";
+if(_13["controlFilter"]){
+_17+="scp-log/c";
+}else{
+_16.controlFilter="false";
+}
+if(_13["runtimeFilter"]){
+if(_17.length>0){
+_17+=" | ";
+}
+_17+="scp-log/rt";
+}else{
+_16.runtimeFilter="false";
+}
+if(_13["sequencingFilter"]){
+if(_17.length>0){
+_17+=" | ";
+}
+_17+="scp-log/s";
+}else{
+_16.sequencingFilter="false";
+}
+if(_13["sequencingReadableFilter"]){
+if(_17.length>0){
+_17+=" | ";
+}
+_17+="scp-log/ss";
+}else{
+_16.sequencingReadableFilter="false";
+}
+if(_13["lookaheadFilter"]){
+if(_17.length>0){
+_17+=" | ";
+}
+_17+="scp-log/l";
+}else{
+_16.lookaheadFilter="false";
+}
+if(_17.length>0){
+var _18=this.dom.selectNodes(_17);
+for(var i=0;i<_18.length;i++){
+_15.appendChild(_18[i].cloneNode(true));
+}
+}
+_16.detailLevel="filter";
+_16.scriptsURL=SCORMENGINE_SCRIPTS_URL;
+this.displayLog(_14,_16);
+};
+Log.prototype.displayRefresh=function(_1a,_1b,_1c){
+if(_1a){
+_1a.close();
+}
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+var _1d=new Object();
+if(_1b){
+_1d.detailLevel="expanded";
+}else{
+_1d.detailLevel="collapsed";
+}
+if(_1c===true){
+_1d.loadAllData="true";
+}
+_1d.scriptsURL=SCORMENGINE_SCRIPTS_URL;
+this.displayLog(this.dom,_1d);
+};
+Log.prototype.displayLog=function(_1e,_1f){
+var win=window.open("","_blank","toolbar=yes,location=yes,directories=yes,resizable=yes,scrollbars=yes");
+if(Log.ClientLoggingIsFunctional!==true){
+win.document.write("<h3 style='font-size: medium: font-family: Arial;'>Logging disabled, likely due to an error during load.</h3>");
+win.document.close();
+return;
+}
+win.document.write("<h3 style='font-size: medium; font-family: Arial; color: navy' id=\"loadMessage\">Refreshing Log Information...</h3>");
+var _21=new XMLHttpRequest();
+_21.open("GET",SCORMENGINE_SCRIPTS_URL+"/clientDebugger/DebuggerXslt.xml",false);
+if(_21.overrideMimeType!==undefined){
+_21.overrideMimeType("text/xml");
+}
+_21.send("");
+var _22=_21.responseXML;
+var _23=new XSLTProcessor();
+_23.importStylesheet(_22);
+for(var _24 in _1f){
+_23.setParameter(null,_24,_1f[_24]);
+}
+var _25;
+if(typeof LogCompression!="undefined"){
+var _26=new LogCompression(window.dictionary_ll);
+var _27=_26.decompressString(this.serializeDomElement(_1e));
+_25=Sarissa.getDomDocument();
+_25=(new DOMParser()).parseFromString(_27,"text/xml");
+}else{
+_25=_1e;
+}
+var _28=_23.transformToDocument(_25);
+var _29=this.serializeDomElement(_28);
+win.document.write(_29);
+win.document.close();
+};
+Log.prototype.toXml=function(_2a){
+if(Log.ClientLoggingIsFunctional!==true){
+return "";
+}
+var _2b=this.serializeDomElement(this.dom);
+if(_2a&&typeof LogCompression!="undefined"){
+var _2c=new LogCompression(window.dictionary_ll);
+var _2d=_2c.decompressString(_2b);
+var _2e=Sarissa.getDomDocument();
+_2e=(new DOMParser()).parseFromString(_2d,"text/xml");
+return this.serializeDomElement(_2e);
+}else{
+return _2b;
+}
+};
+Log.prototype.serializeDomElement=function(_2f){
+if(typeof _2f.xml!="undefined"&&_2f.xml.length>0){
+return _2f.xml;
+}else{
+return (new XMLSerializer()).serializeToString(_2f);
+}
+};
+function LogEntry(_30,_31,_32,_33){
+this.node=_30;
+this.log=_31;
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+this.dom=this.log.dom;
+if(this.log.includeTimestamps){
+this.timeStamp=new Date();
+this.node.setAttribute("ts",formatTimestampForLog(this.timeStamp));
+this.node.setAttribute("ts_utc",formatTimestampForLog(this.timeStamp,true));
+}
+this.node.setAttribute("f",substituteSpecialXmlChars(_32));
+if(_33!==null&&_33!==undefined){
+for(var i=0;i<_33.length;i++){
+this.node.setAttribute("arg"+(i+1),_33[i]);
+}
+}
+}
+LogEntry.prototype.write=function(_35){
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+var _36=this.dom.createElement("i");
+if(this.log.includeTimestamps){
+var now=new Date();
+_36.setAttribute("ts",formatTimestampForLog(now));
+this.node.setAttribute("ts_utc",formatTimestampForLog(now,true));
+}
+var _38=this.dom.createTextNode(substituteSpecialXmlChars(_35));
+_36.appendChild(_38);
+this.node.appendChild(_36);
+};
+LogEntry.prototype.error=function(_39){
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+var _3a=this.dom.createElement("e");
+var _3b=this.dom.createTextNode(_39);
+_3a.appendChild(_3b);
+this.node.appendChild(_3a);
+};
+LogEntry.prototype.startNew=function(_3c,_3d,_3e){
+if(Log.ClientLoggingIsFunctional!==true){
+return new LogEntry(null,this,"");
+}
+var _3f;
+var _40=this.dom.createElement(_3c);
+if(typeof _3d=="string"){
+_3f=new LogEntry(_40,this,_3d,_3e);
+this.node.appendChild(_40);
+}else{
+if(_3d!==null&&_3d!==undefined){
+var _41=_3d.callee.toString().substring(9,_3d.callee.toString().indexOf("{")-1);
+_3f=new LogEntry(_40,this,_41,_3d);
+this.node.appendChild(_40);
+}else{
+_3f=new LogEntry(_40,this,"unknown entry point");
+this.node.appendChild(_40);
+}
+}
+return _3f;
+};
+LogEntry.prototype.setAttribute=function(_42,_43){
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+this.node.setAttribute(_42,substituteSpecialXmlChars(_43.toString()));
+};
+LogEntry.prototype.setReturn=function(_44){
+if(Log.ClientLoggingIsFunctional!==true){
+return;
+}
+this.node.setAttribute("r",substituteSpecialXmlChars(_44.toString()));
+if(this.log.includeTimestamps){
+var now=new Date();
+var _46=(now.getTime()-this.timeStamp.getTime())/1000;
+this.node.setAttribute("et",_46);
+}
+};
+var regExLT=new RegExp("<","g");
+var regExGT=new RegExp(">","g");
+var regExAMP=new RegExp("&","g");
+var regExDBLQUOTE=new RegExp("\"","g");
+var regExNONPRINT=new RegExp("([\x00-\x1f]|\x7f)","g");
+var doesBrowserReplaceSupportFunctionParam="a".replace(/a/,function(){
+return "";
+}).length==0;
+function substituteSpecialXmlChars(str){
+if(str==null){
+return "null";
+}
+str=str.replace(regExLT,"&lt;");
+str=str.replace(regExGT,"&gt;");
+str=str.replace(regExAMP,"&amp;");
+str=str.replace(regExDBLQUOTE,"'");
+if(doesBrowserReplaceSupportFunctionParam){
+str=str.replace(regExNONPRINT,XmlElement_CharacterEscape);
+}else{
+if(regExNONPRINT.test(str)){
+str=EscapeCharacters(str);
+}
+}
+return str;
+}
+function formatTimestampForLog(_48,utc){
+var _4a,_4b,_4c,_4d;
+if(utc){
+_4a=_48.getUTCHours();
+_4b=_48.getUTCMinutes();
+_4c=_48.getUTCSeconds();
+_4d=_48.getUTCMilliseconds();
+}else{
+_4a=_48.getHours();
+_4b=_48.getMinutes();
+_4c=_48.getSeconds();
+_4d=_48.getMilliseconds();
+}
+return _4a.toString().leftpad("0",2)+":"+_4b.toString().leftpad("0",2)+":"+_4c.toString().leftpad("0",2)+"."+_4d.toString().leftpad("0",3);
+}
+

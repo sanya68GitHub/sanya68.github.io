@@ -1,0 +1,10 @@
+Debug.WriteControlAudit("Trying to create XMLHttpRequest in JavaScript1.5");
+try{
+Debug.WriteControlAudit("Creating object");
+objXmlHttp=window.XMLHttpRequest?new XMLHttpRequest():new ActiveXObject("Microsoft.XMLHTTP");
+}
+catch(e){
+Debug.WriteControlAudit("Could not create object, exception="+e);
+objXmlHttp=null;
+}
+
